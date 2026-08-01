@@ -41,23 +41,8 @@
   --amber-dim: #f0dcb8;
 }
 
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    --bg: #f4f6f4;
-    --bg-panel: #ffffff;
-    --bg-panel-raised: #eef2f0;
-    --line: #d3dbd7;
-    --line-soft: #e2e8e4;
-    --text: #2b3b3f;
-    --text-dim: #6b7c80;
-    --text-bright: #101a1c;
-    --accent: #0f9d8e;
-    --accent-dim: #bfe9e2;
-    --accent-glow: rgba(15, 157, 142, 0.10);
-    --amber: #b3690a;
-    --amber-dim: #f0dcb8;
-  }
-}
+/* Dark is the default regardless of OS preference; the toggle below
+   switches via [data-theme] rather than following prefers-color-scheme. */
 
 * { box-sizing: border-box; }
 
@@ -82,6 +67,43 @@ body {
 }
 
 ::selection { background: var(--accent-glow); color: var(--text-bright); }
+
+/* ---------- Theme toggle ---------- */
+
+.theme-toggle {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem 0.4rem 0.7rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.theme-toggle:hover { border-color: var(--accent-dim); color: var(--text); }
+
+.theme-toggle .tt-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .theme-toggle { top: 0.85rem; right: 0.85rem; padding: 0.35rem 0.75rem 0.35rem 0.6rem; }
+}
 
 /* ---------- Masthead ---------- */
 
@@ -628,7 +650,20 @@ hr.rule {
 }
 </style>
 
+<script>
+(function () {
+  var stored = localStorage.getItem('wm-theme');
+  var theme = stored === 'light' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
+
 <div class="grain"></div>
+
+<button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle light and dark theme">
+  <span class="tt-dot"></span>
+  <span id="themeToggleLabel">Dark</span>
+</button>
 
 <header class="masthead">
   <div class="masthead-inner">
@@ -889,3 +924,25 @@ hr.rule {
     </div>
   </footer>
 </main>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  var label = document.getElementById('themeToggleLabel');
+
+  function sync() {
+    var isDark = root.getAttribute('data-theme') !== 'light';
+    label.textContent = isDark ? 'Dark' : 'Light';
+  }
+
+  btn.addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('wm-theme', next);
+    sync();
+  });
+
+  sync();
+})();
+</script>
