@@ -1,0 +1,891 @@
+<title>World Models &amp; Cosmos — A Study Path</title>
+<style>
+@font-face {
+  font-family: 'JBMono';
+  src: local('JetBrains Mono');
+}
+
+:root {
+  --bg: #0b0f14;
+  --bg-panel: #0f151c;
+  --bg-panel-raised: #131b24;
+  --line: #1f2b36;
+  --line-soft: #182129;
+  --text: #c9d3dc;
+  --text-dim: #7c8b99;
+  --text-bright: #eef3f7;
+  --accent: #5eead4;
+  --accent-dim: #2f6e64;
+  --accent-glow: rgba(94, 234, 212, 0.14);
+  --amber: #f5a623;
+  --amber-dim: #8a5e17;
+  --radius: 3px;
+  --serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+  --mono: 'JBMono', 'JetBrains Mono', 'Fira Code', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --sans: -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+
+:root[data-theme="light"] {
+  --bg: #f4f6f4;
+  --bg-panel: #ffffff;
+  --bg-panel-raised: #eef2f0;
+  --line: #d3dbd7;
+  --line-soft: #e2e8e4;
+  --text: #2b3b3f;
+  --text-dim: #6b7c80;
+  --text-bright: #101a1c;
+  --accent: #0f9d8e;
+  --accent-dim: #bfe9e2;
+  --accent-glow: rgba(15, 157, 142, 0.10);
+  --amber: #b3690a;
+  --amber-dim: #f0dcb8;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f4f6f4;
+    --bg-panel: #ffffff;
+    --bg-panel-raised: #eef2f0;
+    --line: #d3dbd7;
+    --line-soft: #e2e8e4;
+    --text: #2b3b3f;
+    --text-dim: #6b7c80;
+    --text-bright: #101a1c;
+    --accent: #0f9d8e;
+    --accent-dim: #bfe9e2;
+    --accent-glow: rgba(15, 157, 142, 0.10);
+    --amber: #b3690a;
+    --amber-dim: #f0dcb8;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.65;
+  margin: 0;
+  padding: 0;
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  z-index: 999;
+  mix-blend-mode: overlay;
+}
+
+::selection { background: var(--accent-glow); color: var(--text-bright); }
+
+/* ---------- Masthead ---------- */
+
+.masthead {
+  border-bottom: 1px solid var(--line);
+  padding: 4rem 1.5rem 3rem;
+  background:
+    radial-gradient(ellipse 900px 400px at 20% -10%, var(--accent-glow), transparent 60%),
+    var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+.masthead::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(180deg, transparent 0 39px, var(--line-soft) 39px 40px);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.masthead-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.4rem;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
+
+h1.title {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: clamp(1.9rem, 5vw, 3rem);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  color: var(--text-bright);
+  margin: 0 0 1.1rem;
+  text-wrap: balance;
+}
+
+h1.title em {
+  font-style: normal;
+  color: var(--accent);
+}
+
+.dek {
+  font-size: 1.08rem;
+  color: var(--text-dim);
+  max-width: 58ch;
+  margin: 0 0 2.2rem;
+  text-wrap: balance;
+}
+
+.meta-row {
+  display: flex;
+  gap: 1.75rem;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--line);
+}
+
+.meta-row .k { color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.68rem; }
+.meta-row .v { color: var(--text); font-variant-numeric: tabular-nums; }
+.meta-row div { display: flex; flex-direction: column; gap: 0.25rem; }
+
+/* ---------- Layout scaffolding ---------- */
+
+.spine {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem;
+}
+
+.wide {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 1.5rem 3.5rem;
+}
+
+.phase-marker {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin: 4.5rem 0 0.6rem;
+}
+
+.phase-marker .num {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: var(--accent);
+  background: var(--accent-glow);
+  border: 1px solid var(--accent-dim);
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius);
+  letter-spacing: 0.04em;
+}
+
+.phase-marker .weeks {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+
+h2.phase-title {
+  font-family: var(--mono);
+  font-size: clamp(1.35rem, 3vw, 1.7rem);
+  color: var(--text-bright);
+  margin: 0 0 1.6rem;
+  font-weight: 700;
+  text-wrap: balance;
+}
+
+h3 {
+  font-family: var(--sans);
+  font-size: 1.04rem;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin: 2rem 0 0.8rem;
+}
+
+p { margin: 0 0 1.1rem; }
+
+ol, ul {
+  margin: 0 0 1.3rem;
+  padding-left: 1.3rem;
+}
+
+li { margin-bottom: 0.55rem; }
+
+li::marker {
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 0.9em;
+}
+
+strong { color: var(--text-bright); font-weight: 700; }
+
+code {
+  font-family: var(--mono);
+  font-size: 0.86em;
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--line);
+  padding: 0.1em 0.4em;
+  border-radius: var(--radius);
+  color: var(--accent);
+}
+
+a { color: var(--accent); text-decoration-color: var(--accent-dim); text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible, button:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+hr.rule {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 3.5rem 0;
+}
+
+/* ---------- Deliverables / callout blocks ---------- */
+
+.callout {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.3rem;
+  margin: 1.4rem 0 1.6rem;
+}
+
+.callout .label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.6rem;
+  display: block;
+}
+
+.callout ul { margin-bottom: 0; }
+
+.callout.amber { border-left-color: var(--amber); }
+.callout.amber .label { color: var(--amber); }
+
+.rule-box {
+  background: var(--bg-panel);
+  border: 1px dashed var(--amber-dim);
+  border-radius: var(--radius);
+  padding: 1rem 1.3rem;
+  margin: 1.4rem 0;
+  font-size: 0.95rem;
+}
+
+.rule-box .label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+/* ---------- Diagram: pipeline ---------- */
+
+.diagram-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 2rem 1.5rem;
+  margin: 1.5rem 0 3rem;
+  overflow-x: auto;
+}
+
+.diagram-caption {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.pipeline {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  min-width: 640px;
+  justify-content: center;
+}
+
+.pipe-node {
+  flex: 1;
+  min-width: 130px;
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem 0.9rem;
+  text-align: center;
+  position: relative;
+}
+
+.pipe-node .n-label {
+  font-family: var(--mono);
+  font-size: 0.86rem;
+  color: var(--text-bright);
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.pipe-node .n-sub {
+  font-size: 0.76rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.pipe-node.accent { border-color: var(--accent-dim); box-shadow: 0 0 0 1px var(--accent-glow); }
+.pipe-node.accent .n-label { color: var(--accent); }
+
+.pipe-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  flex-shrink: 0;
+}
+
+/* ---------- Timeline ---------- */
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 1.5rem 0 3rem;
+}
+
+.tl-row {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  min-height: 46px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.tl-row:first-child { border-top: 1px solid var(--line-soft); }
+
+.tl-label {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem 0.5rem 0;
+  border-right: 1px solid var(--line-soft);
+}
+
+.tl-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+}
+
+.tl-bar {
+  height: 22px;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  padding: 0 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--bg);
+  font-weight: 700;
+  white-space: nowrap;
+  background: var(--accent);
+}
+
+.tl-row.amber .tl-bar { background: var(--amber); }
+
+/* week ruler */
+.tl-ruler {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  letter-spacing: 0.03em;
+}
+.tl-ruler-track {
+  display: flex;
+  padding: 0 0.75rem;
+}
+.tl-ruler-track span { flex: 1; text-align: left; }
+
+/* ---------- Cards grid ---------- */
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.card {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.3rem;
+}
+
+.card .c-index {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  margin-bottom: 0.5rem;
+}
+
+.card h4 {
+  font-size: 0.98rem;
+  margin: 0 0 0.5rem;
+  color: var(--text-bright);
+  font-weight: 700;
+}
+
+.card p { font-size: 0.9rem; margin: 0; color: var(--text-dim); }
+
+/* ---------- Weekly rhythm table ---------- */
+
+.rhythm-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0 3rem;
+  font-size: 0.92rem;
+}
+
+.rhythm-table th {
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.rhythm-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+}
+
+.rhythm-table td:first-child {
+  font-family: var(--mono);
+  color: var(--accent);
+  white-space: nowrap;
+  font-size: 0.82rem;
+}
+
+.rhythm-table tr:last-child td { border-bottom: 1px solid var(--line); }
+
+/* ---------- Glossary chips ---------- */
+
+.glossary-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.3rem;
+  margin: 1.5rem 0 3rem;
+}
+
+.glossary-note .g-icon {
+  font-family: var(--mono);
+  font-size: 1.1rem;
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+/* ---------- Sequence steps ---------- */
+
+.sequence {
+  counter-reset: step;
+  margin: 1.5rem 0 3rem;
+  border-left: 1px solid var(--line);
+  padding-left: 0;
+}
+
+.seq-step {
+  position: relative;
+  padding: 0 0 1.6rem 2.2rem;
+  border-left: 1px solid var(--line);
+  margin-left: 0.9rem;
+}
+
+.seq-step:last-child { border-left: 1px solid transparent; padding-bottom: 0; }
+
+.seq-step::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: -0.95rem;
+  top: 0;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--accent-dim);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seq-step .s-title {
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 0.25rem;
+}
+
+.seq-step .s-body { font-size: 0.92rem; color: var(--text-dim); }
+
+/* ---------- Footer ---------- */
+
+.colophon {
+  border-top: 1px solid var(--line);
+  padding: 2.5rem 1.5rem 3.5rem;
+  text-align: center;
+}
+
+.colophon-inner {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.colophon p {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--text-dim);
+  letter-spacing: 0.03em;
+}
+
+.refs {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: left;
+}
+
+.refs li {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  display: flex;
+  gap: 0.6rem;
+}
+
+.refs .r-tag { color: var(--text-dim); flex-shrink: 0; }
+
+@media (max-width: 640px) {
+  .pipeline { flex-direction: column; min-width: 0; }
+  .pipe-arrow { transform: rotate(90deg); height: 24px; }
+  .tl-row, .tl-ruler { grid-template-columns: 72px 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+</style>
+
+<div class="grain"></div>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="eyebrow">Study Path · Physical AI</div>
+    <h1 class="title">World Models &amp; NVIDIA <em>Cosmos</em></h1>
+    <p class="dek">A structured path from first principles of video-based world models to operational fluency with Cosmos, ending in a real upstream contribution. Three phases, self-paced, built for sustained study rather than a weekend skim.</p>
+    <div class="meta-row">
+      <div><span class="k">Scope</span><span class="v">Foundations → Fluency → Contribution</span></div>
+      <div><span class="k">Format</span><span class="v">Self-paced, session-based</span></div>
+      <div><span class="k">Track</span><span class="v">Video understanding &amp; generation</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="spine">
+    <p>The guiding idea across this path: treat <strong>Cosmos as a video-intelligence and world-model layer</strong> — a system that watches, predicts, and simulates, rather than one that acts. Everything below builds toward being able to read the research, run the stack, and contribute back to it.</p>
+  </section>
+
+  <hr class="rule" style="max-width:700px; margin: 0 auto;">
+
+  <!-- PHASE 1 -->
+  <section class="spine">
+    <div class="phase-marker"><span class="num">PHASE 1</span><span class="weeks">FOUNDATIONS</span></div>
+    <h2 class="phase-title">Build the conceptual base</h2>
+    <p>Before touching code, get fluent in the five bodies of knowledge that everything downstream depends on. Read to <em>summarize</em>, not just to skim — each topic should leave you able to explain it from scratch.</p>
+  </section>
+
+  <div class="wide">
+    <div class="card-grid">
+      <div class="card">
+        <div class="c-index">01 — REPRESENTATION</div>
+        <h4>Video representations</h4>
+        <p>Vision Transformers, spatiotemporal attention, video tokenization, latent diffusion, and temporal consistency.</p>
+      </div>
+      <div class="card">
+        <div class="c-index">02 — PREDICTION</div>
+        <h4>World models</h4>
+        <p>State representations, prediction, uncertainty, counterfactual simulation, and planning.</p>
+      </div>
+      <div class="card">
+        <div class="c-index">03 — GROUNDING</div>
+        <h4>Multimodal / Physical AI</h4>
+        <p>Vision-language models, video generation, action-conditioned models, and synthetic data.</p>
+      </div>
+      <div class="card">
+        <div class="c-index">04 — MEASUREMENT</div>
+        <h4>Evaluation</h4>
+        <p>Temporal grounding, event recall/precision, false-alarm rate, calibration, robustness, latency, and cost.</p>
+      </div>
+      <div class="card">
+        <div class="c-index">05 — SYSTEM</div>
+        <h4>Cosmos architecture</h4>
+        <p>Reasoner versus Generator, inference versus training, the model/data/evaluation stack, and distributed execution.</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="spine">
+    <div class="callout">
+      <span class="label">Deliverables — Phase 1</span>
+      <ul>
+        <li><code>research-notes/world-models.md</code> — paper notes and concepts</li>
+        <li><code>research-notes/cosmos-code-map.md</code> — code-path map and execution notes</li>
+        <li>A glossary of 30–50 domain terms, written in your own words</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- PHASE 2 -->
+  <section class="spine">
+    <div class="phase-marker"><span class="num">PHASE 2</span><span class="weeks">OPERATIONAL FLUENCY</span></div>
+    <h2 class="phase-title">Run Cosmos, reproducibly</h2>
+    <p>Move from reading to running. The target is a single fixed experiment you can repeat exactly — same clip, same prompt, same seed — so that every change in output is attributable to something you changed on purpose.</p>
+
+    <h3>Goals</h3>
+    <ul>
+      <li>Install and run a minimal supported Cosmos <strong>inference</strong> flow.</li>
+      <li>Establish one fixed test clip, prompt, seed, hardware record, and output location.</li>
+      <li>Run 20–50 short clips through a structured prompt and record outputs consistently.</li>
+      <li>Categorize errors: missed event, hallucination, temporal error, poor grounding, latency, or infrastructure failure.</li>
+    </ul>
+
+    <div class="rule-box">
+      <span class="label">Sequencing rule</span>
+      Start with Reasoner-mode work. Do not begin with training or fine-tuning — get the inference path solid and reproducible first.
+    </div>
+  </section>
+
+  <div class="wide">
+    <div class="diagram-panel">
+      <div class="diagram-caption">Reasoner vs. Generator — where Phase 2 lives</div>
+      <div class="pipeline">
+        <div class="pipe-node accent">
+          <div class="n-label">Input clip</div>
+          <div class="n-sub">Fixed test clip + prompt + seed</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node accent">
+          <div class="n-label">Cosmos Reasoner</div>
+          <div class="n-sub">Temporal understanding, explanation, evidence</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node">
+          <div class="n-label">Structured output</div>
+          <div class="n-sub">Logged, timestamped, hardware-recorded</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node">
+          <div class="n-label">Error taxonomy</div>
+          <div class="n-sub">Missed / hallucinated / temporal / latency</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 3 -->
+  <section class="spine">
+    <div class="phase-marker"><span class="num">PHASE 3</span><span class="weeks">UPSTREAM CONTRIBUTION</span></div>
+    <h2 class="phase-title">Give something back</h2>
+    <p>The last phase turns study into a contribution that stands on its own — useful to anyone using Cosmos, not just to this study path.</p>
+
+    <h3>Candidate contributions</h3>
+  </section>
+
+  <div class="wide">
+    <div class="card-grid">
+      <div class="card">
+        <div class="c-index">A</div>
+        <h4>Data tooling</h4>
+        <p>Adapter or validation tooling for timestamped multi-camera video manifests.</p>
+      </div>
+      <div class="card">
+        <div class="c-index">B</div>
+        <h4>Evaluation harness</h4>
+        <p>Structured event-evaluation harness with temporal-grounding metrics.</p>
+      </div>
+      <div class="card">
+        <div class="c-index">C</div>
+        <h4>Performance docs</h4>
+        <p>Inference throughput/VRAM profiling, batching, or serving documentation.</p>
+      </div>
+      <div class="card">
+        <div class="c-index">D</div>
+        <h4>Reference integration</h4>
+        <p>An edge-to-Cosmos reference integration example.</p>
+      </div>
+      <div class="card">
+        <div class="c-index">E</div>
+        <h4>DX improvements</h4>
+        <p>Windows/WSL setup, error-message clarity, tests, or documentation fixes.</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="spine">
+    <h3>Contribution sequence</h3>
+    <div class="sequence">
+      <div class="seq-step">
+        <div class="s-title">Read the repository guidance</div>
+        <div class="s-body">Run the relevant test and lint commands before writing anything.</div>
+      </div>
+      <div class="seq-step">
+        <div class="s-title">Find a bounded scope</div>
+        <div class="s-body">Pick an existing issue, or propose a small design in an issue discussion first.</div>
+      </div>
+      <div class="seq-step">
+        <div class="s-title">Submit a focused PR</div>
+        <div class="s-body">Include tests, documentation, and reproducible commands.</div>
+      </div>
+      <div class="seq-step">
+        <div class="s-title">Stay narrow</div>
+        <div class="s-body">Avoid broad refactors as a first contribution — small and mergeable beats ambitious and stalled.</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule" style="max-width:980px; margin: 0 auto;">
+
+  <!-- TIMELINE -->
+  <section class="spine">
+    <div class="phase-marker" style="margin-top:0;"><span class="num">OVERVIEW</span><span class="weeks">SUGGESTED PACING</span></div>
+    <h2 class="phase-title">A twelve-week arc</h2>
+    <p>These durations are a starting scaffold, not a deadline — stretch any phase that needs more depth. Weeks are relative to when you begin, not calendar-fixed.</p>
+  </section>
+
+  <div class="wide">
+    <div class="diagram-panel" style="padding-bottom: 1rem;">
+      <div class="diagram-caption">Phase duration, in study-weeks</div>
+      <div class="tl-ruler">
+        <div></div>
+        <div class="tl-ruler-track">
+          <span>W1</span><span>W2</span><span>W3</span><span>W4</span><span>W5</span><span>W6</span><span>W7</span><span>W8</span><span>W9</span><span>W10</span><span>W11</span><span>W12</span>
+        </div>
+      </div>
+      <div class="timeline">
+        <div class="tl-row">
+          <div class="tl-label">Phase 1</div>
+          <div class="tl-track">
+            <div class="tl-bar" style="width: 33%;">Foundations · W1–4</div>
+          </div>
+        </div>
+        <div class="tl-row amber">
+          <div class="tl-label">Phase 2</div>
+          <div class="tl-track" style="padding-left: calc(0.75rem + 25%);">
+            <div class="tl-bar" style="width: 33%;">Fluency · W4–8</div>
+          </div>
+        </div>
+        <div class="tl-row">
+          <div class="tl-label">Phase 3</div>
+          <div class="tl-track" style="padding-left: calc(0.75rem + 58%);">
+            <div class="tl-bar" style="width: 34%;">Contribution · W8–12+</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEKLY RHYTHM -->
+  <section class="spine">
+    <h3>Weekly operating rhythm</h3>
+    <p>A suggested split of study sessions per week — adjust the count, keep the ratio.</p>
+  </section>
+
+  <div class="wide">
+    <table class="rhythm-table">
+      <thead>
+        <tr><th>Cadence</th><th>Activity</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>2× sessions</td><td>Papers and source reading — write concise notes and open questions</td></tr>
+        <tr><td>2× sessions</td><td>Reproduce, profile, or instrument a Cosmos workflow</td></tr>
+        <tr><td>1× session</td><td>Contribution work — issue scoping, implementation, or PR polish</td></tr>
+        <tr><td>1× short session</td><td>Upstream issue/PR review and next-week planning</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <section class="spine">
+    <div class="glossary-note">
+      <div class="g-icon">§</div>
+      <div>
+        <strong style="color:var(--text-bright);">Decision rules to carry through every phase</strong>
+        <p style="margin: 0.5rem 0 0; font-size: 0.92rem;">Prefer Cosmos Reasoner for selected clips before attempting continuous video analysis or full world simulation. Treat synthetic data as an experiment whose value must be proven against held-out real footage — never as ground truth by default.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="colophon">
+    <div class="colophon-inner">
+      <p>REFERENCE STACK</p>
+      <ul class="refs">
+        <li><span class="r-tag">[docs]</span> <a href="https://www.nvidia.com/en-us/ai/cosmos/">NVIDIA Cosmos overview</a></li>
+        <li><span class="r-tag">[docs]</span> <a href="https://docs.nvidia.com/cosmos/latest/introduction.html">Cosmos documentation</a></li>
+        <li><span class="r-tag">[repo]</span> <a href="https://github.com/nvidia/cosmos">github.com/nvidia/cosmos</a></li>
+        <li><span class="r-tag">[repo]</span> <a href="https://github.com/NVIDIA/cosmos-framework">github.com/NVIDIA/cosmos-framework</a></li>
+      </ul>
+    </div>
+  </footer>
+</main>
