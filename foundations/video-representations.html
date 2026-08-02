@@ -1,0 +1,221 @@
+<title>Video Representations: World Models &amp; Cosmos</title>
+<link rel="stylesheet" href="../assets/site.css">
+<script src="../assets/site.js" defer></script>
+
+<div class="grain"></div>
+
+<button class="lang-toggle" id="langToggle" type="button" aria-label="Switch between English and Chinese">
+  <span id="langToggleLabel">中文</span>
+</button>
+
+<button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle light and dark theme">
+  <span class="tt-dot"></span>
+  <span id="themeToggleLabel">Dark</span>
+</button>
+
+<header class="masthead compact">
+  <div class="masthead-inner">
+    <a class="crumb i18n" href="../index.html" data-en="<span class=&quot;arrow&quot;>←</span> Study Path" data-zh="<span class=&quot;arrow&quot;>←</span> 返回学习路径"><span class="arrow">←</span> Study Path</a>
+    <div class="eyebrow i18n" data-en="Phase 1 · Topic 01" data-zh="第一阶段 · 主题 01">Phase 1 · Topic 01</div>
+    <h1 class="title i18n" data-en="Video Representations" data-zh="视频表征">Video Representations</h1>
+    <p class="dek i18n" data-en="A video model needs a compact representation that preserves appearance, motion, and temporal relationships for understanding, prediction, and generation. This topic explains how tokenization, attention, and latent spaces turn raw video into that model-ready representation." data-zh="视频模型需要把原始视频转换成紧凑的表示，同时保留外观、运动和时间关系，才能进行视频理解、未来预测和内容生成。本主题将介绍视频标记化、注意力机制和隐空间如何完成这一转换。">A video model needs a compact representation that preserves appearance, motion, and temporal relationships for understanding, prediction, and generation. This topic explains how tokenization, attention, and latent spaces turn raw video into that model-ready representation.</p>
+  </div>
+</header>
+
+<main>
+  <article class="article">
+
+    <h2 class="i18n" data-en="Why video is not just images with a time axis" data-zh="为什么视频不只是多了时间轴的图像">Why video is not just images with a time axis</h2>
+    <p class="i18n" data-en="A single image is already a large object for a neural network: a 224×224 image has 50,176 pixels. A ten-second video at 24 frames per second and the same resolution has 240 frames: roughly 12 million pixels. Naively treating video as a stack of independent images throws away the one thing that makes video valuable: <strong>motion and change carry information that no single frame contains.</strong> A model that only sees frames in isolation cannot tell a cup falling from a cup being lifted." data-zh="单张图像对神经网络来说就已经是个不小的输入了：一张 224×224 的图像有 50,176 个像素。而一段 10 秒、24 fps、同样分辨率的视频有 240 帧，约 1200 万个像素。如果只是把视频当成一堆互不相干的图像来处理，就丢掉了视频最有价值的那部分：<strong>运动和变化本身携带着任何单帧都不包含的信息。</strong>只会孤立看单帧的模型，分不清杯子是在往下掉，还是正被人拿起来。">A single image is already a large object for a neural network: a 224×224 image has 50,176 pixels. A ten-second video at 24 frames per second and the same resolution has 240 frames: roughly 12 million pixels. Naively treating video as a stack of independent images throws away the one thing that makes video valuable: <strong>motion and change carry information that no single frame contains.</strong> A model that only sees frames in isolation cannot tell a cup falling from a cup being lifted.</p>
+    <p class="i18n" data-en="Every idea in this section is an answer to the same underlying constraint: video is too large to process at the pixel level with full attention, and too structured (temporally redundant, spatially correlated) to treat as an unordered pile of tokens. The techniques below are the compromises the field has converged on." data-zh="这一节的每个概念，其实都在回应同一个约束：视频在像素层面太大，没法直接上完整注意力；同时它又太有结构了：时间上高度冗余、空间上高度相关，不能当成一堆无序 token 来对待。下面这些技术，就是这个领域一路摸索后收敛下来的折中方案。">Every idea in this section is an answer to the same underlying constraint: video is too large to process at the pixel level with full attention, and too structured (temporally redundant, spatially correlated) to treat as an unordered pile of tokens. The techniques below are the compromises the field has converged on.</p>
+
+    <h2 class="i18n" data-en="From Vision Transformers to video" data-zh="从视觉 Transformer 到视频">From Vision Transformers to video</h2>
+    <p class="i18n" data-en="The Vision Transformer (ViT) established the pattern that video models inherit: cut the input into fixed-size patches, linearly project each patch into a vector (a token), add a positional embedding, and hand the resulting sequence to a standard Transformer encoder. For a single image, a patch is a square crop of pixels: typically 16×16." data-zh="视频模型的基本套路是从视觉 Transformer（ViT）那里继承来的：输入切成固定大小的图块（patch），每块线性映射成一个向量，也就是一个 token，再加上位置编码，最后把整个序列丢给标准的 Transformer 编码器。放在单张图像上，一个 patch 就是一小片方形的像素区域，通常取 16×16。">The Vision Transformer (ViT) established the pattern that video models inherit: cut the input into fixed-size patches, linearly project each patch into a vector (a token), add a positional embedding, and hand the resulting sequence to a standard Transformer encoder. For a single image, a patch is a square crop of pixels: typically 16×16.</p>
+    <p class="i18n" data-en="Extending this approach to video also requires dividing the time dimension. A common solution is the <strong>tubelet embedding</strong>. Instead of using a flat 16×16 patch, the model takes a small 3D block, such as 2 frames of 16×16 pixels, and projects it into one token. Each tubelet token therefore contains a small amount of local motion information before attention begins." data-zh="把这种方法用于视频时，还要对时间维度进行切分。常见方案是<strong>管状嵌入（tubelet embedding）</strong>。模型不再使用单帧的 16×16 图块，而是截取一个小型三维块，例如连续 2 帧中的 16×16 像素区域，再将整个三维块映射为一个 token。因此，管状 token 在进入注意力层之前，已经包含了少量局部运动信息。">Extending this approach to video also requires dividing the time dimension. A common solution is the <strong>tubelet embedding</strong>. Instead of using a flat 16×16 patch, the model takes a small 3D block, such as 2 frames of 16×16 pixels, and projects it into one token. Each tubelet token therefore contains a small amount of local motion information before attention begins.</p>
+
+    <div class="callout">
+      <span class="label i18n" data-en="Worked example" data-zh="示例演算">Worked example</span>
+      <p class="i18n" data-en="A 224×224, 32-frame clip with 16×16×2 tubelets produces (224/16) × (224/16) × (32/2) = 14 × 14 × 16 = <strong>3,136 tokens</strong>. Compare that to treating every pixel as a token: over 1.6 million. Tubelet embedding is the first and largest compression step in the whole pipeline." data-zh="一段 224×224、32 帧的片段，用 16×16×2 的管状块切，得到 (224/16) × (224/16) × (32/2) = 14 × 14 × 16 = <strong>3,136 个 token</strong>。对比一下：每个像素算一个 token 的话是 160 万以上。管状嵌入是整条流水线上的第一步，也是压缩力度最大的一步。">A 224×224, 32-frame clip with 16×16×2 tubelets produces (224/16) × (224/16) × (32/2) = 14 × 14 × 16 = <strong>3,136 tokens</strong>. Compare that to treating every pixel as a token: over 1.6 million. Tubelet embedding is the first and largest compression step in the whole pipeline.</p>
+    </div>
+
+    <div class="diagram-panel">
+      <div class="diagram-caption i18n" data-en="Token count: raw pixels vs. tubelet embedding" data-zh="Token 数量：原始像素 vs. 管状嵌入">Token count: raw pixels vs. tubelet embedding</div>
+      <div class="compare-bars">
+        <div class="cbar-row">
+          <div class="cbar-label i18n" data-en="Every pixel as a token" data-zh="每个像素作为一个 token">Every pixel as a token</div>
+          <div class="cbar-track">
+            <div class="cbar-fill-wrap"><div class="cbar-fill" style="width: 100%;"></div></div>
+            <div class="cbar-value">1,605,632</div>
+          </div>
+        </div>
+        <div class="cbar-row accent">
+          <div class="cbar-label i18n" data-en="16×16×2 tubelet as a token" data-zh="16×16×2 管状块作为一个 token">16×16×2 tubelet as a token</div>
+          <div class="cbar-track">
+            <div class="cbar-fill-wrap"><div class="cbar-fill" style="width: 3px;"></div></div>
+            <div class="cbar-value">3,136</div>
+          </div>
+        </div>
+        <div class="cbar-multiplier i18n" data-en="≈ 512× fewer tokens to attend over" data-zh="需要处理的 token 数量少了约 512 倍">≈ 512× fewer tokens to attend over</div>
+      </div>
+    </div>
+
+    <h2 class="i18n" data-en="Spatiotemporal attention: the cost problem" data-zh="时空注意力机制：成本问题">Spatiotemporal attention: the cost problem</h2>
+    <p class="i18n" data-en="Self-attention works by having every token look at every other token and decide how much to &quot;pay attention&quot; to it: that pairwise comparison is what lets the model connect a moving object in frame 1 to the same object in frame 30. Because every token must compare itself against every other token, the number of comparisons is not proportional to the number of tokens (n): it's proportional to the number of <em>pairs</em> you can form from n tokens, which is n × n = n². With 4 tokens there are 4×4 = 16 pairs; with 10 tokens there are 10×10 = 100 pairs; with 3,136 tokens there are 3,136×3,136 ≈ 9.8 million pairs. This n-squared relationship is exactly what &quot;O(n²)&quot; (quadratic) means: double the tokens, and the cost roughly quadruples, not doubles: which is why the four bars below get so dramatically longer even though the token counts only grow in modest steps." data-zh="自注意力的做法，是让每个 token 去看其他所有 token，再决定对各自&quot;分多少注意力&quot;：正是这种两两比较，才让模型把第 1 帧里移动的物体和第 30 帧里的同一个物体对上。既然每个 token 都要和所有 token 比一遍，比较次数就不是随 token 数（n）线性增长，而是正比于 n 个 token 能组成的<em>配对</em>数，即 n × n = n²。4 个 token 是 4×4 = 16 对，10 个是 10×10 = 100 对，3,136 个则是 3,136×3,136 ≈ 980 万对。这个平方关系正是&quot;O(n²)&quot;（平方复杂度）的含义：token 翻一倍，开销大约变四倍而不是两倍。所以下面这几根柱子，哪怕 token 数只是小幅增长，长度也会拉得极长。">Self-attention works by having every token look at every other token and decide how much to "pay attention" to it: that pairwise comparison is what lets the model connect a moving object in frame 1 to the same object in frame 30. Because every token must compare itself against every other token, the number of comparisons is not proportional to the number of tokens (n): it's proportional to the number of <em>pairs</em> you can form from n tokens, which is n × n = n². With 4 tokens there are 4×4 = 16 pairs; with 10 tokens there are 10×10 = 100 pairs; with 3,136 tokens there are 3,136×3,136 ≈ 9.8 million pairs. This n-squared relationship is exactly what "O(n²)" (quadratic) means: double the tokens, and the cost roughly quadruples, not doubles: which is why the four bars below get so dramatically longer even though the token counts only grow in modest steps.</p>
+
+    <div class="diagram-panel">
+      <div class="diagram-caption i18n" data-en="Attention pairs: bar length is proportional to actual pair count" data-zh="注意力配对数量：柱状条长度与实际配对数量成正比">Attention pairs: bar length is proportional to actual pair count</div>
+      <div class="compare-bars">
+        <div class="cbar-row">
+          <div class="cbar-label i18n" data-en="196 tokens (one frame)" data-zh="196 个 token（单帧）">196 tokens (one frame)</div>
+          <div class="cbar-track">
+            <div class="cbar-fill-wrap"><div class="cbar-fill" style="width: 0.39%;"></div></div>
+            <div class="cbar-value">196² = 38,416 pairs</div>
+          </div>
+        </div>
+        <div class="cbar-row accent">
+          <div class="cbar-label i18n" data-en="3,136 tokens (32-frame clip)" data-zh="3,136 个 token（32 帧片段）">3,136 tokens (32-frame clip)</div>
+          <div class="cbar-track">
+            <div class="cbar-fill-wrap"><div class="cbar-fill" style="width: 100%;"></div></div>
+            <div class="cbar-value">3,136² ≈ 9.8M pairs</div>
+          </div>
+        </div>
+        <div class="cbar-multiplier i18n" data-en="16× more tokens (32 frames vs. 1) → 256× more attention pairs" data-zh="token 数量增加 16 倍（32 帧 vs. 1 帧）→ 注意力配对数量增加 256 倍">16× more tokens (32 frames vs. 1) → 256× more attention pairs</div>
+      </div>
+    </div>
+    <p class="i18n" data-en="Three factorizations are used in practice, each trading some modeling power for tractability:" data-zh="实践中主要有三种分解方式，每种都是拿一部分建模能力去换可行性：">Three factorizations are used in practice, each trading some modeling power for tractability:</p>
+
+    <dl class="term-list">
+      <div class="term">
+        <dt class="i18n" data-en="Divided space-time attention" data-zh="分离式时空注意力">Divided space-time attention</dt>
+        <dd>
+          <p class="i18n" data-en="Factor joint spatiotemporal attention into two stages: spatial attention among the S tokens in each frame, then temporal attention across the T frames for each spatial position. TimeSformer and many video ViTs use variants of this design. With n = ST total tokens, attention cost falls from O((ST)²) to O(TS² + ST²)." data-zh="这种方法把时空注意力拆开计算：先在每一帧内，让 S 个空间 token 相互关注；再固定空间位置，沿时间轴处理 T 帧的信息。TimeSformer 和许多视频 ViT 都采用了类似设计。设视频共有 T 帧、每帧有 S 个 token，则注意力的计算量可由 O((ST)²) 降至 O(TS² + ST²)。">Factor joint spatiotemporal attention into two stages: spatial attention among the S tokens in each frame, then temporal attention across the T frames for each spatial position. TimeSformer and many video ViTs use variants of this design. With n = ST total tokens, attention cost falls from O((ST)²) to O(TS² + ST²).</p>
+          <p class="i18n" data-en="The saving comes with a structural bias. Under joint attention, any two spatiotemporal tokens can exchange information through one attention edge. Under divided attention, tokens that differ in both time and position communicate indirectly through the spatial and temporal stages. This factorization can make correspondences involving fast motion, large displacement, occlusion, or camera movement harder to learn, although it does not necessarily require multiple blocks: sequential sublayers can already provide an indirect path within one block. Deeper stacks, motion-aware features, or occasional global-attention layers can help, but divided attention is still not equivalent to joint attention. The formula above covers only the attention-score computation; actual speedups also depend on projections, MLPs, memory traffic, and implementation." data-zh="代价是，模型处理时空关系的方式受到了限制。联合注意力可以直接关联任意两个时空 token；拆开以后，如果两个 token 所在的帧和空间位置都不同，就要借助空间注意力和时间注意力逐步建立联系。因此，遇到快速运动、大幅位移、遮挡或镜头移动时，模型可能更难找准物体在不同帧中的对应关系。不过，这些信息并不一定要经过多个注意力块才能传递：如果空间、时间两个子层顺序执行，在同一个块内也可以完成间接的信息传递。增加网络深度、加入运动特征，或者穿插使用全局注意力，都有助于弥补这一不足，但仍不能让它与联合注意力完全等价。还要注意，上面的公式只计算了注意力本身的开销；实际能快多少，还会受到线性投影、MLP、显存读写和工程实现的影响。">The saving comes with a structural bias. Under joint attention, any two spatiotemporal tokens can exchange information through one attention edge. Under divided attention, tokens that differ in both time and position communicate indirectly through the spatial and temporal stages. This factorization can make correspondences involving fast motion, large displacement, occlusion, or camera movement harder to learn, although it does not necessarily require multiple blocks: sequential sublayers can already provide an indirect path within one block. Deeper stacks, motion-aware features, or occasional global-attention layers can help, but divided attention is still not equivalent to joint attention. The formula above covers only the attention-score computation; actual speedups also depend on projections, MLPs, memory traffic, and implementation.</p>
+        </dd>
+      </div>
+      <div class="term">
+        <dt class="i18n" data-en="Windowed / local attention" data-zh="窗口化 / 局部注意力">Windowed / local attention</dt>
+        <dd>
+          <p class="i18n" data-en="Restrict each token to a local spatiotemporal neighborhood, such as a 3D window of nearby tubelets. If each window contains W tokens, the attention cost is roughly O(nW) instead of O(n²). Some architectures shift the windows between layers so that information can eventually cross the original boundaries. This extends the windowing idea used by Swin Transformer to video." data-zh="这种方法只让每个 token 关注附近的时空区域，例如由相邻管状块组成的三维窗口。如果每个窗口包含 W 个 token，注意力计算量大致为 O(nW)，低于全局注意力的 O(n²)。一些模型还会在相邻层之间移动窗口，使信息能够逐步越过原来的窗口边界。它可以看作 Swin Transformer 窗口机制在视频任务中的扩展。">Restrict each token to a local spatiotemporal neighborhood, such as a 3D window of nearby tubelets. If each window contains W tokens, the attention cost is roughly O(nW) instead of O(n²). Some architectures shift the windows between layers so that information can eventually cross the original boundaries. This extends the windowing idea used by Swin Transformer to video.</p>
+          <p class="i18n" data-en="The tradeoff is weaker access to distant context. Tokens in separate windows cannot interact in the same attention operation, so long distance relationships must pass through shifted windows or later layers. Small windows save more computation but may split one object or motion track across boundaries. Larger windows preserve more context but cost more memory and computation. Shifted windows, overlapping windows, and occasional global layers reduce this problem, but they do not remove the basic locality constraint." data-zh="它的代价是难以及时利用远距离信息。处在不同窗口中的 token 无法在同一次注意力计算中直接关联，远距离关系只能通过移动后的窗口或后续网络层逐步传递。窗口越小，节省的计算越多，但同一个物体或一段运动轨迹也更容易被窗口边界切开；窗口越大，保留的上下文越多，显存和计算开销也越高。移动窗口、重叠窗口或少量全局注意力层可以缓解这个问题，但无法消除局部计算本身的限制。">The tradeoff is weaker access to distant context. Tokens in separate windows cannot interact in the same attention operation, so long distance relationships must pass through shifted windows or later layers. Small windows save more computation but may split one object or motion track across boundaries. Larger windows preserve more context but cost more memory and computation. Shifted windows, overlapping windows, and occasional global layers reduce this problem, but they do not remove the basic locality constraint.</p>
+        </dd>
+      </div>
+      <div class="term">
+        <dt class="i18n" data-en="Hierarchical / pooled attention" data-zh="层级化 / 池化注意力">Hierarchical / pooled attention</dt>
+        <dd>
+          <p class="i18n" data-en="Reduce the token grid as the network gets deeper, much like the gradual reduction of feature map resolution in a CNN. Early layers process fine detail at high resolution. Later layers use fewer tokens, so they can cover a larger spatial and temporal range at lower cost. The exact saving depends on when downsampling occurs and by how much." data-zh="这种方法会随着网络加深逐步缩小 token 网格，思路类似于 CNN 逐层降低特征图分辨率。浅层以较高分辨率处理局部细节，深层使用更少的 token，因此能以较低开销覆盖更大的空间和时间范围。具体能节省多少计算，取决于降采样的位置和比例。">Reduce the token grid as the network gets deeper, much like the gradual reduction of feature map resolution in a CNN. Early layers process fine detail at high resolution. Later layers use fewer tokens, so they can cover a larger spatial and temporal range at lower cost. The exact saving depends on when downsampling occurs and by how much.</p>
+          <p class="i18n" data-en="The tradeoff is loss of resolution. Once several tokens have been merged, later layers may no longer know exactly where or when a small event occurred. Aggressive pooling can therefore hurt small object recognition, precise spatial or temporal localization, and brief actions. It can also introduce aliasing if the downsampling step does not preserve the relevant signal. Multiscale features, skip connections, and gentler pooling schedules can retain more detail, but discarded information cannot be recovered perfectly." data-zh="它的代价是分辨率下降。多个 token 合并以后，深层网络可能无法准确判断一个小事件发生在什么位置、什么时间。因此，过强的池化会影响小目标识别、精确的空间或时间定位，以及持续时间很短的动作。如果降采样没有保留关键信号，还可能产生混叠。多尺度特征、跳跃连接和更平缓的池化安排可以保留更多细节，但已经丢失的信息无法被完整恢复。">The tradeoff is loss of resolution. Once several tokens have been merged, later layers may no longer know exactly where or when a small event occurred. Aggressive pooling can therefore hurt small object recognition, precise spatial or temporal localization, and brief actions. It can also introduce aliasing if the downsampling step does not preserve the relevant signal. Multiscale features, skip connections, and gentler pooling schedules can retain more detail, but discarded information cannot be recovered perfectly.</p>
+        </dd>
+      </div>
+    </dl>
+
+    <p class="i18n" data-en="The practical takeaway: when you read a video model's architecture section and see terms like <code>divided attention</code>, <code>window size</code>, or <code>pooling stride</code>, they are all answers to the same question: how much of the O(n²) cost can be avoided without losing the long-range dependencies that make video understanding possible." data-zh="实用的结论是：读一个视频模型的架构章节时，看到 <code>divided attention</code>（分离注意力）、<code>window size</code>（窗口大小）、<code>pooling stride</code>（池化步长）这类说法，它们回答的都是同一个问题：在不丢掉长程依赖的前提下，O(n²) 的开销能省掉多少。而长程依赖恰恰是视频理解成立的前提。">The practical takeaway: when you read a video model's architecture section and see terms like <code>divided attention</code>, <code>window size</code>, or <code>pooling stride</code>, they are all answers to the same question: how much of the O(n²) cost can be avoided without losing the long-range dependencies that make video understanding possible.</p>
+
+    <h2 class="i18n" data-en="Video tokenization: turning pixels into model-ready codes" data-zh="视频标记化：把像素转换为模型可处理的编码">Video tokenization: turning pixels into model-ready codes</h2>
+    <p class="i18n" data-en="Tubelet embedding produces continuous vectors: it compresses, but it does not give you a discrete vocabulary the way word tokenization does for text. Many modern video generation and world models add a second step: a learned <strong>video tokenizer</strong>, usually a VQ-VAE-style autoencoder, that maps a video clip into a grid of <em>discrete</em> codes from a fixed codebook, then reconstructs the video from those codes." data-zh="管状嵌入产出的是连续向量：压缩是做到了，但并不像文本分词那样给你一份离散词表。所以很多现代视频生成模型和世界模型会再加一步：一个学出来的<strong>视频分词器</strong>，通常是 VQ-VAE 风格的自编码器，把一段视频映射成一张<em>离散</em>编码网格，编码取自固定码本，再由这些编码把视频重建回来。">Tubelet embedding produces continuous vectors: it compresses, but it does not give you a discrete vocabulary the way word tokenization does for text. Many modern video generation and world models add a second step: a learned <strong>video tokenizer</strong>, usually a VQ-VAE-style autoencoder, that maps a video clip into a grid of <em>discrete</em> codes from a fixed codebook, then reconstructs the video from those codes.</p>
+    <p class="i18n" data-en="The codebook size is a design choice, not something derived from the clip's dimensions: 16,384 (2¹⁴) is a common pick because VQGAN and several follow-up video tokenizers popularized it: a power-of-two codebook in the 8,192–16,384 range tends to give the autoencoder enough distinct codes to reconstruct fine detail, without the embedding table and code-prediction head becoming unnecessarily large." data-zh="码本大小是设计时定下来的一个参数，不是从片段的尺寸推算出来的。16,384（也就是 2 的 14 次方）之所以常见，是因为 VQGAN 和后续几个视频分词器把它用开了：码本控制在 8,192 到 16,384 这个 2 的幂次区间里，通常足够自编码器重建出细节，同时又不会让嵌入表和编码预测头变得过大。">The codebook size is a design choice, not something derived from the clip's dimensions: 16,384 (2¹⁴) is a common pick because VQGAN and several follow-up video tokenizers popularized it: a power-of-two codebook in the 8,192–16,384 range tends to give the autoencoder enough distinct codes to reconstruct fine detail, without the embedding table and code-prediction head becoming unnecessarily large.</p>
+    <p class="i18n" data-en="The choice between discrete codes and continuous latents determines which generative objective can be used above the tokenizer. With <strong>discrete codes</strong>, a video becomes a sequence of integer codebook indices. The model can then learn to predict the next index from the preceding indices, much like next-token prediction in a language model. With <strong>continuous latents</strong>, there is no fixed vocabulary of indices. A diffusion model can instead learn to turn noise gradually into a video latent, while <strong>flow matching</strong> learns a continuous path from noise to data. Both approaches are widely used, and neither is universally best." data-zh="选择离散编码还是连续隐变量，会决定标记器之后采用哪类生成目标。使用<strong>离散编码</strong>时，视频会变成一串整数形式的码本索引。模型可以根据前面的索引预测下一个索引，训练方式与语言模型的下一 token 预测相似。使用<strong>连续隐变量</strong>时，不存在固定的索引词表。扩散模型可以学习逐步把噪声转化为视频隐变量，<strong>流匹配（flow matching）</strong>则学习从噪声到数据的连续变化过程。这两类方法都很常见，目前没有一种方法在所有场景下都更好。">The choice between discrete codes and continuous latents determines which generative objective can be used above the tokenizer. With <strong>discrete codes</strong>, a video becomes a sequence of integer codebook indices. The model can then learn to predict the next index from the preceding indices, much like next-token prediction in a language model. With <strong>continuous latents</strong>, there is no fixed vocabulary of indices. A diffusion model can instead learn to turn noise gradually into a video latent, while <strong>flow matching</strong> learns a continuous path from noise to data. Both approaches are widely used, and neither is universally best.</p>
+    <p class="i18n" data-en="In either case, the tokenizer is a <strong>compression bottleneck</strong>. It must preserve enough information in the compressed codes or latents to reconstruct the source video, but some detail will inevitably be lost. Downstream generation, prediction, and understanding cannot recover information that the tokenizer has already discarded. For example, if small text becomes unreadable after tokenization, later model stages cannot reconstruct the original characters reliably. Tokenizer quality therefore places an upper bound on the entire system." data-zh="无论采用哪种形式，标记器都是一个<strong>压缩瓶颈</strong>。它需要在压缩后的编码或隐变量中保留足够的信息，以便重建原始视频，但压缩过程难免会损失细节。已经被标记器丢弃的信息，后续的生成、预测和理解模块无法可靠恢复。例如，如果一行小字经过标记化后已经无法辨认，后续模型通常也无法还原原来的字符。因此，标记器的质量会限制整个系统的性能上限。">In either case, the tokenizer is a <strong>compression bottleneck</strong>. It must preserve enough information in the compressed codes or latents to reconstruct the source video, but some detail will inevitably be lost. Downstream generation, prediction, and understanding cannot recover information that the tokenizer has already discarded. For example, if small text becomes unreadable after tokenization, later model stages cannot reconstruct the original characters reliably. Tokenizer quality therefore places an upper bound on the entire system.</p>
+
+    <h2 class="i18n" data-en="Latent diffusion: generating in a compressed space" data-zh="隐空间扩散：在压缩空间中生成">Latent diffusion: generating in a compressed space</h2>
+    <p class="i18n" data-en="Diffusion models generate data by learning to reverse a gradual noising process: start from pure noise and iteratively denoise toward a realistic sample. Doing this directly on pixels is extremely expensive for video: each denoising step touches every pixel of every frame. <strong>Latent diffusion</strong> solves this by running the entire diffusion process inside the compressed latent space produced by a video autoencoder, then decoding only the final result back to pixels." data-zh="扩散模型靠学习逆转一个逐步加噪的过程来生成数据：从纯噪声出发反复去噪，最后得到一个逼真样本。这一过程直接在像素上做，对视频来说代价高得离谱：每一步去噪都要碰到每一帧的每一个像素。<strong>隐空间扩散（Latent diffusion）</strong>的解法是把整个扩散过程搬进视频自编码器压出来的隐空间，只在最后把结果解码回像素。">Diffusion models generate data by learning to reverse a gradual noising process: start from pure noise and iteratively denoise toward a realistic sample. Doing this directly on pixels is extremely expensive for video: each denoising step touches every pixel of every frame. <strong>Latent diffusion</strong> solves this by running the entire diffusion process inside the compressed latent space produced by a video autoencoder, then decoding only the final result back to pixels.</p>
+    <p class="i18n" data-en="The idea is related to latent diffusion for images, but video autoencoders must also compress and reconstruct time. A video encoder maps a clip to a smaller latent tensor; a diffusion or flow-based model generates in that space under text or other conditions; and a decoder reconstructs the full-resolution video. Compression factors are architecture-specific rather than universal constants." data-zh="这一思路与图像隐空间扩散相近，但视频自编码器还必须处理时间维度的压缩与重建。视频编码器先把片段映射为更小的隐空间张量；扩散模型或基于流的模型在文本等条件下于该空间中生成；最后由解码器重建全分辨率视频。具体压缩倍率取决于模型架构，并不存在通用的固定数值。">The idea is related to latent diffusion for images, but video autoencoders must also compress and reconstruct time. A video encoder maps a clip to a smaller latent tensor; a diffusion or flow-based model generates in that space under text or other conditions; and a decoder reconstructs the full-resolution video. Compression factors are architecture-specific rather than universal constants.</p>
+
+    <div class="compare-grid">
+      <div class="compare-col">
+        <h4 class="i18n" data-en="Pixel-space diffusion" data-zh="像素空间扩散">Pixel-space diffusion</h4>
+        <ul>
+          <li class="i18n" data-en="Denoises every pixel, every step" data-zh="每一步都要对每个像素去噪">Denoises every pixel, every step</li>
+          <li class="i18n" data-en="Highest fidelity ceiling, highest compute cost" data-zh="保真度上限最高，但计算成本也最高">Highest fidelity ceiling, highest compute cost</li>
+          <li class="i18n" data-en="Rarely used for video at scale today" data-zh="目前很少在大规模视频场景中使用">Rarely used for video at scale today</li>
+        </ul>
+      </div>
+      <div class="compare-col">
+        <h4 class="i18n" data-en="Latent diffusion" data-zh="隐空间扩散">Latent diffusion</h4>
+        <ul>
+          <li class="i18n" data-en="Denoises a compressed latent tensor" data-zh="只对压缩后的隐空间张量去噪">Denoises a compressed latent tensor</li>
+          <li class="i18n" data-en="Fidelity capped by the autoencoder's reconstruction quality" data-zh="保真度上限受自编码器重建质量制约">Fidelity capped by the autoencoder's reconstruction quality</li>
+          <li class="i18n" data-en="What Cosmos, Sora-style models, and most production video generators use" data-zh="Cosmos、类 Sora 的模型和多数生产级视频生成器都走这条路">What Cosmos, Sora-style models, and most production video generators use</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2 class="i18n" data-en="Temporal consistency: the problem unique to video" data-zh="时间一致性：视频特有的问题">Temporal consistency: the problem unique to video</h2>
+    <p class="i18n" data-en="An image generator only has to produce one internally consistent frame. A video generator has to produce hundreds of frames that are <em>each</em> internally consistent <em>and</em> consistent with every other frame: the same object should keep its identity, shape, and texture as it moves, and lighting should not flicker arbitrarily between frames. This failure mode, where a generated video looks locally plausible frame-by-frame but incoherent over time, is called <strong>temporal inconsistency</strong> or flicker." data-zh="图像生成器只要产出一张自洽的画面就够了。视频生成器却要产出成百上千帧，每帧<em>各自</em>要自洽，帧与帧之间<em>还</em>要相互一致：同一个物体在运动中身份、形状、纹理都得保持住，光照也不能在帧间无端跳变。生成的视频逐帧看都还合理、连起来却不连贯，这种失效叫做<strong>时间不一致</strong>，也就是俗称的闪烁。">An image generator only has to produce one internally consistent frame. A video generator has to produce hundreds of frames that are <em>each</em> internally consistent <em>and</em> consistent with every other frame: the same object should keep its identity, shape, and texture as it moves, and lighting should not flicker arbitrarily between frames. This failure mode, where a generated video looks locally plausible frame-by-frame but incoherent over time, is called <strong>temporal inconsistency</strong> or flicker.</p>
+    <p class="i18n" data-en="Three mechanisms are used, often together, to enforce consistency:" data-zh="要把一致性守住，通常靠下面三种机制，而且往往是几种一起上：">Three mechanisms are used, often together, to enforce consistency:</p>
+    <ul>
+      <li class="i18n" data-en="<strong>Temporal attention layers</strong>: attention across the time axis (see above) lets every frame's generation condition on neighboring frames directly, rather than generating each frame independently." data-zh="<strong>时间注意力层</strong>：沿时间轴做注意力（见前文），每一帧的生成都能直接以相邻帧为条件，而不是各帧各生成各的。"><strong>Temporal attention layers</strong>: attention across the time axis (see above) lets every frame's generation condition on neighboring frames directly, rather than generating each frame independently.</li>
+      <li class="i18n" data-en="<strong>3D convolutions / causal temporal layers</strong> in the autoencoder, so the latent representation itself already encodes short-range motion continuity before generation even starts." data-zh="在自编码器里放<strong>三维卷积或因果时间层</strong>，这样生成还没开始，隐空间表示本身就已经把短程的运动连续性编码进去了。"><strong>3D convolutions / causal temporal layers</strong> in the autoencoder, so the latent representation itself already encodes short-range motion continuity before generation even starts.</li>
+      <li class="i18n" data-en="<strong>Autoregressive / rolling generation</strong>: generating a video in overlapping chunks where each new chunk is conditioned on the end of the previous one, trading some long-range coherence for the ability to generate arbitrarily long videos." data-zh="<strong>自回归 / 滚动式生成</strong>：分成互相重叠的小段来生成，每一段都以上一段的结尾为条件，牺牲一部分长程一致性，换取生成任意长视频的能力。"><strong>Autoregressive / rolling generation</strong>: generating a video in overlapping chunks where each new chunk is conditioned on the end of the previous one, trading some long-range coherence for the ability to generate arbitrarily long videos.</li>
+    </ul>
+
+    <div class="rule-box">
+      <span class="label i18n" data-en="Why this matters for Cosmos" data-zh="这对 Cosmos 意味着什么">Why this matters for Cosmos</span>
+      <span class="i18n" data-en="Temporal reasoning requires the model's visual tokenization, positional encoding, and attention stack to preserve and relate evidence across frames; temporal attention is one possible mechanism, not a guarantee of correct timestamps. For generated data, temporal consistency is likewise necessary but not sufficient: flicker and identity swaps are obvious defects, while subtler physical errors require separate evaluation." data-zh="时间推理要求视觉标记化、位置编码和注意力模块能够保留并关联跨帧证据。时间注意力只是其中一种机制，本身并不能保证时间戳正确。对生成数据而言，时间一致性同样只是必要条件而非充分条件：闪烁和身份互换属于明显缺陷，更隐蔽的物理错误仍需单独评估。">Temporal reasoning requires the model's visual tokenization, positional encoding, and attention stack to preserve and relate evidence across frames; temporal attention is one possible mechanism, not a guarantee of correct timestamps. For generated data, temporal consistency is likewise necessary but not sufficient: flicker and identity swaps are obvious defects, while subtler physical errors require separate evaluation.</span>
+    </div>
+
+    <h2 class="i18n" data-en="How the pieces fit together" data-zh="各部分如何组合在一起">How the pieces fit together</h2>
+    <div class="diagram-panel">
+      <div class="diagram-caption i18n" data-en="Raw video to model-ready representation" data-zh="从原始视频到模型可用的表征">Raw video to model-ready representation</div>
+      <div class="pipeline">
+        <div class="pipe-node">
+          <div class="n-label i18n" data-en="Raw video" data-zh="原始视频">Raw video</div>
+          <div class="n-sub i18n" data-en="H × W × T pixels" data-zh="H × W × T 像素">H × W × T pixels</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node accent">
+          <div class="n-label i18n" data-en="Tokenizer / autoencoder" data-zh="分词器 / 自编码器">Tokenizer / autoencoder</div>
+          <div class="n-sub i18n" data-en="Patch/tubelet encoder or video autoencoder" data-zh="图块/管状编码器或视频自编码器">Patch/tubelet encoder or video autoencoder</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node accent">
+          <div class="n-label i18n" data-en="Compressed latent" data-zh="压缩隐空间">Compressed latent</div>
+          <div class="n-sub i18n" data-en="Discrete or continuous codes" data-zh="离散或连续编码">Discrete or continuous codes</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node">
+          <div class="n-label i18n" data-en="Spatiotemporal transformer" data-zh="时空 Transformer">Spatiotemporal transformer</div>
+          <div class="n-sub i18n" data-en="Understand, predict, or generate" data-zh="理解、预测或生成">Understand, predict, or generate</div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="i18n" data-en="Glossary" data-zh="术语表">Glossary</h2>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr><th class="i18n" data-en="Term" data-zh="术语">Term</th><th class="i18n" data-en="Meaning" data-zh="含义">Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>Tubelet</code></td><td class="i18n" data-en="A small 3D block of pixels (space × space × time) treated as one token." data-zh="一小块三维像素（空间 × 空间 × 时间），整块当作一个 token 处理。">A small 3D block of pixels (space × space × time) treated as one token.</td></tr>
+          <tr><td><code>Patchify</code></td><td class="i18n" data-en="Splitting an image or video into fixed-size regions before embedding." data-zh="做嵌入之前，先把图像或视频切成固定大小的区域。">Splitting an image or video into fixed-size regions before embedding.</td></tr>
+          <tr><td><code>VQ-VAE</code></td><td class="i18n" data-en="Vector-Quantized Variational Autoencoder: maps inputs to a fixed discrete codebook." data-zh="向量量化变分自编码器，把输入映射到一个固定的离散码本上。">Vector-Quantized Variational Autoencoder: maps inputs to a fixed discrete codebook.</td></tr>
+          <tr><td><code>Latent space</code></td><td class="i18n" data-en="A compressed representation a model operates on instead of raw pixels." data-zh="模型真正拿来操作的压缩表示，而不是原始像素。">A compressed representation a model operates on instead of raw pixels.</td></tr>
+          <tr><td><code>Temporal flicker</code></td><td class="i18n" data-en="Frame-to-frame inconsistency in a generated video (identity, texture, lighting)." data-zh="生成视频里帧与帧之间对不上，包括身份、纹理、光照等方面。">Frame-to-frame inconsistency in a generated video (identity, texture, lighting).</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="i18n" data-en="Study checklist" data-zh="学习检查清单">Study checklist</h2>
+    <div class="callout">
+      <span class="label i18n" data-en="Before moving on, you should be able to" data-zh="继续下一节之前，你应该能够">Before moving on, you should be able to</span>
+      <ul>
+        <li class="i18n" data-en="Explain tubelet embedding to someone who only knows the image ViT." data-zh="向只懂图像 ViT 的人讲清楚什么是管状嵌入（tubelet embedding）。">Explain tubelet embedding to someone who only knows the image ViT.</li>
+        <li class="i18n" data-en="Name the O(n²) cost problem and at least two factorizations used to reduce it." data-zh="说清 O(n²) 开销问题，并举出至少两种降低它的分解方式。">Name the O(n²) cost problem and at least two factorizations used to reduce it.</li>
+        <li class="i18n" data-en="Describe why latent diffusion is used instead of pixel-space diffusion for video." data-zh="说明视频生成为什么用隐空间扩散而不是像素空间扩散。">Describe why latent diffusion is used instead of pixel-space diffusion for video.</li>
+        <li class="i18n" data-en="Give two concrete mechanisms that improve temporal consistency." data-zh="举出两种能够提升时间一致性的具体机制。">Give two concrete mechanisms that improve temporal consistency.</li>
+      </ul>
+    </div>
+
+    <nav class="article-nav">
+      <a href="../index.html">
+        <span class="dir i18n" data-en="Back to" data-zh="返回">Back to</span>
+        <span class="to i18n" data-en="Study Path overview" data-zh="学习路径总览">Study Path overview</span>
+      </a>
+      <a class="next" href="world-models.html">
+        <span class="dir i18n" data-en="Next topic" data-zh="下一主题">Next topic</span>
+        <span class="to i18n" data-en="World Models →" data-zh="世界模型 →">World Models →</span>
+      </a>
+    </nav>
+
+  </article>
+</main>

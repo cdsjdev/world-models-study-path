@@ -1,655 +1,12 @@
-<title>World Models &amp; Cosmos — A Study Path</title>
-<style>
-@font-face {
-  font-family: 'JBMono';
-  src: local('JetBrains Mono');
-}
-
-:root {
-  --bg: #13181f;
-  --bg-panel: #171d25;
-  --bg-panel-raised: #1c232c;
-  --line: #1f2b36;
-  --line-soft: #182129;
-  --text: #c9d3dc;
-  --text-dim: #7c8b99;
-  --text-bright: #eef3f7;
-  --accent: #5eead4;
-  --accent-dim: #2f6e64;
-  --accent-glow: rgba(94, 234, 212, 0.14);
-  --amber: #f5a623;
-  --amber-dim: #8a5e17;
-  --radius: 3px;
-  --serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
-  --mono: 'JBMono', 'JetBrains Mono', 'Fira Code', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
-  --sans: -apple-system, 'Segoe UI', system-ui, sans-serif;
-}
-
-:root[data-theme="light"] {
-  --bg: #f4f6f4;
-  --bg-panel: #ffffff;
-  --bg-panel-raised: #eef2f0;
-  --line: #d3dbd7;
-  --line-soft: #e2e8e4;
-  --text: #2b3b3f;
-  --text-dim: #6b7c80;
-  --text-bright: #101a1c;
-  --accent: #0f9d8e;
-  --accent-dim: #bfe9e2;
-  --accent-glow: rgba(15, 157, 142, 0.10);
-  --amber: #b3690a;
-  --amber-dim: #f0dcb8;
-}
-
-/* Dark is the default regardless of OS preference; the toggle below
-   switches via [data-theme] rather than following prefers-color-scheme. */
-
-* { box-sizing: border-box; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--sans);
-  font-size: 16px;
-  line-height: 1.65;
-  margin: 0;
-  padding: 0;
-}
-
-.grain {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.025;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  z-index: 999;
-  mix-blend-mode: overlay;
-}
-
-::selection { background: var(--accent-glow); color: var(--text-bright); }
-
-/* ---------- Theme toggle ---------- */
-
-.theme-toggle {
-  position: fixed;
-  top: 1.25rem;
-  right: 1.25rem;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: var(--bg-panel);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 0.4rem 0.9rem 0.4rem 0.7rem;
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-  color: var(--text-dim);
-  cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease;
-}
-
-.theme-toggle:hover { border-color: var(--accent-dim); color: var(--text); }
-
-.theme-toggle .tt-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 6px var(--accent);
-  flex-shrink: 0;
-}
-
-@media (max-width: 640px) {
-  .theme-toggle { top: 0.85rem; right: 0.85rem; padding: 0.35rem 0.75rem 0.35rem 0.6rem; }
-}
-
-/* ---------- Masthead ---------- */
-
-.masthead {
-  border-bottom: 1px solid var(--line);
-  padding: 4rem 1.5rem 3rem;
-  background:
-    radial-gradient(ellipse 900px 400px at 20% -10%, var(--accent-glow), transparent 60%),
-    var(--bg);
-  position: relative;
-  overflow: hidden;
-}
-
-.masthead-inner {
-  max-width: 910px;
-  margin: 0 auto;
-  position: relative;
-}
-
-.eyebrow {
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 1.4rem;
-}
-
-.eyebrow::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 8px var(--accent);
-}
-
-h1.title {
-  font-family: var(--mono);
-  font-weight: 700;
-  font-size: clamp(1.9rem, 5vw, 3rem);
-  line-height: 1.12;
-  letter-spacing: -0.01em;
-  color: var(--text-bright);
-  margin: 0 0 1.1rem;
-  text-wrap: balance;
-}
-
-h1.title em {
-  font-style: normal;
-  color: var(--accent);
-}
-
-.dek {
-  font-size: 1.08rem;
-  color: var(--text-dim);
-  max-width: 58ch;
-  margin: 0 0 2.2rem;
-  text-wrap: balance;
-}
-
-.meta-row {
-  display: flex;
-  gap: 1.75rem;
-  flex-wrap: wrap;
-  font-family: var(--mono);
-  font-size: 0.78rem;
-  color: var(--text-dim);
-  padding-top: 1.6rem;
-  border-top: 1px solid var(--line);
-}
-
-.meta-row .k { color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.68rem; }
-.meta-row .v { color: var(--text); font-variant-numeric: tabular-nums; }
-.meta-row div { display: flex; flex-direction: column; gap: 0.25rem; }
-
-/* ---------- Layout scaffolding ---------- */
-
-.spine {
-  max-width: 840px;
-  margin: 0 auto;
-  padding: 3.5rem 1.5rem;
-}
-
-.wide {
-  max-width: 1175px;
-  margin: 0 auto;
-  padding: 0 1.5rem 3.5rem;
-}
-
-.phase-marker {
-  display: flex;
-  align-items: baseline;
-  gap: 1rem;
-  margin: 4.5rem 0 0.6rem;
-}
-
-.phase-marker .num {
-  font-family: var(--mono);
-  font-size: 0.85rem;
-  color: var(--accent);
-  background: var(--accent-glow);
-  border: 1px solid var(--accent-dim);
-  padding: 0.15rem 0.55rem;
-  border-radius: var(--radius);
-  letter-spacing: 0.04em;
-}
-
-.phase-marker .weeks {
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  color: var(--text-dim);
-  letter-spacing: 0.04em;
-}
-
-h2.phase-title {
-  font-family: var(--mono);
-  font-size: clamp(1.35rem, 3vw, 1.7rem);
-  color: var(--text-bright);
-  margin: 0 0 1.6rem;
-  font-weight: 700;
-  text-wrap: balance;
-}
-
-h3 {
-  font-family: var(--sans);
-  font-size: 1.04rem;
-  font-weight: 700;
-  color: var(--text-bright);
-  margin: 2rem 0 0.8rem;
-}
-
-p { margin: 0 0 1.1rem; }
-
-ol, ul {
-  margin: 0 0 1.3rem;
-  padding-left: 1.3rem;
-}
-
-li { margin-bottom: 0.55rem; }
-
-li::marker {
-  color: var(--accent);
-  font-family: var(--mono);
-  font-size: 0.9em;
-}
-
-strong { color: var(--text-bright); font-weight: 700; }
-
-code {
-  font-family: var(--mono);
-  font-size: 0.86em;
-  background: var(--bg-panel-raised);
-  border: 1px solid var(--line);
-  padding: 0.1em 0.4em;
-  border-radius: var(--radius);
-  color: var(--accent);
-}
-
-a { color: var(--accent); text-decoration-color: var(--accent-dim); text-underline-offset: 3px; }
-a:hover { text-decoration-thickness: 2px; }
-a:focus-visible, button:focus-visible, summary:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-hr.rule {
-  border: none;
-  border-top: 1px solid var(--line);
-  margin: 3.5rem 0;
-}
-
-/* ---------- Deliverables / callout blocks ---------- */
-
-.callout {
-  background: var(--bg-panel);
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--accent);
-  border-radius: var(--radius);
-  padding: 1.1rem 1.3rem;
-  margin: 1.4rem 0 1.6rem;
-}
-
-.callout .label {
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 0.6rem;
-  display: block;
-}
-
-.callout ul { margin-bottom: 0; }
-
-.callout.amber { border-left-color: var(--amber); }
-.callout.amber .label { color: var(--amber); }
-
-.rule-box {
-  background: var(--bg-panel);
-  border: 1px dashed var(--amber-dim);
-  border-radius: var(--radius);
-  padding: 1rem 1.3rem;
-  margin: 1.4rem 0;
-  font-size: 0.95rem;
-}
-
-.rule-box .label {
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--amber);
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-/* ---------- Diagram: pipeline ---------- */
-
-.diagram-panel {
-  background: var(--bg-panel);
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  padding: 2rem 1.5rem;
-  margin: 1.5rem 0 3rem;
-  overflow-x: auto;
-}
-
-.diagram-caption {
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-.pipeline {
-  display: flex;
-  align-items: stretch;
-  gap: 0;
-  min-width: 640px;
-  justify-content: center;
-}
-
-.pipe-node {
-  flex: 1;
-  min-width: 130px;
-  background: var(--bg-panel-raised);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 1rem 0.9rem;
-  text-align: center;
-  position: relative;
-}
-
-.pipe-node .n-label {
-  font-family: var(--mono);
-  font-size: 0.86rem;
-  color: var(--text-bright);
-  font-weight: 700;
-  margin-bottom: 0.35rem;
-}
-
-.pipe-node .n-sub {
-  font-size: 0.76rem;
-  color: var(--text-dim);
-  line-height: 1.4;
-}
-
-.pipe-node.accent { border-color: var(--accent-dim); box-shadow: 0 0 0 1px var(--accent-glow); }
-.pipe-node.accent .n-label { color: var(--accent); }
-
-.pipe-arrow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  color: var(--text-dim);
-  font-family: var(--mono);
-  flex-shrink: 0;
-}
-
-/* ---------- Timeline ---------- */
-
-.timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  margin: 1.5rem 0 3rem;
-}
-
-.tl-row {
-  display: grid;
-  grid-template-columns: 96px 1fr;
-  min-height: 46px;
-  border-bottom: 1px solid var(--line-soft);
-}
-
-.tl-row:first-child { border-top: 1px solid var(--line-soft); }
-
-.tl-label {
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  color: var(--text-dim);
-  display: flex;
-  align-items: center;
-  padding: 0.5rem 0.75rem 0.5rem 0;
-  border-right: 1px solid var(--line-soft);
-}
-
-.tl-track {
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: 0.5rem 0.75rem;
-}
-
-.tl-bar {
-  height: 22px;
-  border-radius: 2px;
-  display: flex;
-  align-items: center;
-  padding: 0 0.6rem;
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  color: var(--bg);
-  font-weight: 700;
-  white-space: nowrap;
-  background: var(--accent);
-}
-
-.tl-row.amber .tl-bar { background: var(--amber); }
-
-/* week ruler */
-.tl-ruler {
-  display: grid;
-  grid-template-columns: 96px 1fr;
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  color: var(--text-dim);
-  letter-spacing: 0.03em;
-}
-.tl-ruler-track {
-  display: flex;
-  padding: 0 0.75rem;
-}
-.tl-ruler-track span { flex: 1; text-align: left; }
-
-/* ---------- Cards grid ---------- */
-
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1rem;
-  margin: 1.5rem 0 2rem;
-}
-
-.card {
-  background: var(--bg-panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 1.2rem 1.3rem;
-}
-
-.card .c-index {
-  font-family: var(--mono);
-  font-size: 0.68rem;
-  color: var(--accent);
-  letter-spacing: 0.08em;
-  margin-bottom: 0.5rem;
-}
-
-.card h4 {
-  font-size: 0.98rem;
-  margin: 0 0 0.5rem;
-  color: var(--text-bright);
-  font-weight: 700;
-}
-
-.card p { font-size: 0.9rem; margin: 0; color: var(--text-dim); }
-
-/* ---------- Weekly rhythm table ---------- */
-
-.rhythm-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1.5rem 0 3rem;
-  font-size: 0.92rem;
-}
-
-.rhythm-table th {
-  text-align: left;
-  font-family: var(--mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  padding: 0.6rem 1rem;
-  border-bottom: 1px solid var(--line);
-}
-
-.rhythm-table td {
-  padding: 0.85rem 1rem;
-  border-bottom: 1px solid var(--line-soft);
-  vertical-align: top;
-}
-
-.rhythm-table td:first-child {
-  font-family: var(--mono);
-  color: var(--accent);
-  white-space: nowrap;
-  font-size: 0.82rem;
-}
-
-.rhythm-table tr:last-child td { border-bottom: 1px solid var(--line); }
-
-/* ---------- Glossary chips ---------- */
-
-.glossary-note {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.9rem;
-  background: var(--bg-panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 1.1rem 1.3rem;
-  margin: 1.5rem 0 3rem;
-}
-
-.glossary-note .g-icon {
-  font-family: var(--mono);
-  font-size: 1.1rem;
-  color: var(--accent);
-  flex-shrink: 0;
-  margin-top: 0.1rem;
-}
-
-/* ---------- Sequence steps ---------- */
-
-.sequence {
-  counter-reset: step;
-  margin: 1.5rem 0 3rem;
-  border-left: 1px solid var(--line);
-  padding-left: 0;
-}
-
-.seq-step {
-  position: relative;
-  padding: 0 0 1.6rem 2.2rem;
-  border-left: 1px solid var(--line);
-  margin-left: 0.9rem;
-}
-
-.seq-step:last-child { border-left: 1px solid transparent; padding-bottom: 0; }
-
-.seq-step::before {
-  counter-increment: step;
-  content: counter(step);
-  position: absolute;
-  left: -0.95rem;
-  top: 0;
-  width: 1.9rem;
-  height: 1.9rem;
-  border-radius: 50%;
-  background: var(--bg-panel-raised);
-  border: 1px solid var(--accent-dim);
-  color: var(--accent);
-  font-family: var(--mono);
-  font-size: 0.78rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.seq-step .s-title {
-  font-weight: 700;
-  color: var(--text-bright);
-  margin-bottom: 0.25rem;
-}
-
-.seq-step .s-body { font-size: 0.92rem; color: var(--text-dim); }
-
-/* ---------- Footer ---------- */
-
-.colophon {
-  border-top: 1px solid var(--line);
-  padding: 2.5rem 1.5rem 3.5rem;
-  text-align: center;
-}
-
-.colophon-inner {
-  max-width: 840px;
-  margin: 0 auto;
-}
-
-.colophon p {
-  font-family: var(--mono);
-  font-size: 0.74rem;
-  color: var(--text-dim);
-  letter-spacing: 0.03em;
-}
-
-.refs {
-  list-style: none;
-  padding: 0;
-  margin: 1.5rem 0 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  text-align: left;
-}
-
-.refs li {
-  font-family: var(--mono);
-  font-size: 0.8rem;
-  display: flex;
-  gap: 0.6rem;
-}
-
-.refs .r-tag { color: var(--text-dim); flex-shrink: 0; }
-
-@media (max-width: 640px) {
-  .pipeline { flex-direction: column; min-width: 0; }
-  .pipe-arrow { transform: rotate(90deg); height: 24px; }
-  .tl-row, .tl-ruler { grid-template-columns: 72px 1fr; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; transition: none !important; }
-}
-</style>
-
-<script>
-(function () {
-  var stored = localStorage.getItem('wm-theme');
-  var theme = stored === 'light' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', theme);
-})();
-</script>
+<title>World Models &amp; Cosmos: A Study Path</title>
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js" defer></script>
 
 <div class="grain"></div>
+
+<button class="lang-toggle" id="langToggle" type="button" aria-label="Switch between English and Chinese">
+  <span id="langToggleLabel">中文</span>
+</button>
 
 <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle light and dark theme">
   <span class="tt-dot"></span>
@@ -658,114 +15,114 @@ hr.rule {
 
 <header class="masthead">
   <div class="masthead-inner">
-    <div class="eyebrow">Study Path · Physical AI</div>
-    <h1 class="title">World Models &amp; NVIDIA <em>Cosmos</em></h1>
-    <p class="dek">A structured path from first principles of video-based world models to operational fluency with Cosmos, ending in a real upstream contribution. Three phases, self-paced, built for sustained study rather than a weekend skim.</p>
+    <div class="eyebrow i18n" data-en="Study Path · Physical AI" data-zh="学习路径 · 具身智能">Study Path · Physical AI</div>
+    <h1 class="title i18n" data-en="World Models &amp; NVIDIA <em>Cosmos</em>" data-zh="世界模型与 NVIDIA <em>Cosmos</em>">World Models &amp; NVIDIA <em>Cosmos</em></h1>
+    <p class="dek i18n" data-en="A structured path from first principles of video-based world models to operational fluency with Cosmos, ending in a real upstream contribution. Three phases, self-paced, built for sustained study rather than a weekend skim." data-zh="这是一条从原理走到实践的路：先把视频世界模型的基本原理弄明白，再练到能真正把 Cosmos 用起来，最后向上游提交一次实实在在的贡献。全程分三个阶段，节奏由自己掌握。它的定位是长期钻研，不是周末速成。">A structured path from first principles of video-based world models to operational fluency with Cosmos, ending in a real upstream contribution. Three phases, self-paced, built for sustained study rather than a weekend skim.</p>
     <div class="meta-row">
-      <div><span class="k">Scope</span><span class="v">Foundations → Fluency → Contribution</span></div>
-      <div><span class="k">Format</span><span class="v">Self-paced, session-based</span></div>
-      <div><span class="k">Track</span><span class="v">Video understanding &amp; generation</span></div>
+      <div><span class="k i18n" data-en="Scope" data-zh="范围">Scope</span><span class="v i18n" data-en="Foundations → Fluency → Contribution" data-zh="基础 → 熟练 → 贡献">Foundations → Fluency → Contribution</span></div>
+      <div><span class="k i18n" data-en="Format" data-zh="形式">Format</span><span class="v i18n" data-en="Self-paced, session-based" data-zh="自主节奏，按学习单元进行">Self-paced, session-based</span></div>
+      <div><span class="k i18n" data-en="Track" data-zh="方向">Track</span><span class="v i18n" data-en="Video understanding &amp; generation" data-zh="视频理解与生成">Video understanding &amp; generation</span></div>
     </div>
   </div>
 </header>
 
 <main>
   <section class="spine">
-    <p>The guiding idea across this path: treat <strong>Cosmos as a video-intelligence and world-model layer</strong> — a system that watches, predicts, and simulates, rather than one that acts. Everything below builds toward being able to read the research, run the stack, and contribute back to it.</p>
+    <p class="i18n" data-en="The guiding idea across this path: treat <strong>Cosmos as an omnimodal world-model platform</strong>. Its Reasoner surface supports understanding and planning, while its Generator surface can produce vision, sound, and action outputs. Everything below builds toward being able to read the research, run the stack, and contribute back to it." data-zh="整条路径围绕一个核心认识展开：<strong>Cosmos 是一个全模态世界模型平台</strong>。Reasoner 接口侧重理解与规划，Generator 接口则可生成视觉、声音和动作等输出。下面的每一步都指向同一个目标：读懂相关研究，跑通技术栈，并最终向上游项目作出贡献。">The guiding idea across this path: treat <strong>Cosmos as an omnimodal world-model platform</strong>. Its Reasoner surface supports understanding and planning, while its Generator surface can produce vision, sound, and action outputs. Everything below builds toward being able to read the research, run the stack, and contribute back to it.</p>
   </section>
 
   <hr class="rule" style="max-width:840px; margin: 0 auto;">
 
   <!-- PHASE 1 -->
   <section class="spine">
-    <div class="phase-marker"><span class="num">PHASE 1</span><span class="weeks">FOUNDATIONS</span></div>
-    <h2 class="phase-title">Build the conceptual base</h2>
-    <p>Before touching code, get fluent in the five bodies of knowledge that everything downstream depends on. Read to <em>summarize</em>, not just to skim — each topic should leave you able to explain it from scratch.</p>
+    <div class="phase-marker"><span class="num i18n" data-en="PHASE 1" data-zh="第一阶段">PHASE 1</span><span class="weeks i18n" data-en="FOUNDATIONS" data-zh="基础知识">FOUNDATIONS</span></div>
+    <h2 class="phase-title i18n" data-en="Build the conceptual base" data-zh="建立概念基础">Build the conceptual base</h2>
+    <p class="i18n" data-en="Before touching code, get fluent in the five bodies of knowledge that everything downstream depends on. Read to <em>summarize</em>, not just to skim: each topic should leave you able to explain it from scratch." data-zh="先别急着写代码。后面所有工作都压在五块知识之上，得先把这五块吃透。读的时候要以<em>能复述</em>为标准，而不是扫一遍就过：每个主题都要学到能从零讲清楚为止。">Before touching code, get fluent in the five bodies of knowledge that everything downstream depends on. Read to <em>summarize</em>, not just to skim: each topic should leave you able to explain it from scratch.</p>
   </section>
 
   <div class="wide">
     <div class="card-grid">
-      <div class="card">
-        <div class="c-index">01 — REPRESENTATION</div>
-        <h4>Video representations</h4>
-        <p>Vision Transformers, spatiotemporal attention, video tokenization, latent diffusion, and temporal consistency.</p>
-      </div>
-      <div class="card">
-        <div class="c-index">02 — PREDICTION</div>
-        <h4>World models</h4>
-        <p>State representations, prediction, uncertainty, counterfactual simulation, and planning.</p>
-      </div>
-      <div class="card">
-        <div class="c-index">03 — GROUNDING</div>
-        <h4>Multimodal / Physical AI</h4>
-        <p>Vision-language models, video generation, action-conditioned models, and synthetic data.</p>
-      </div>
-      <div class="card">
-        <div class="c-index">04 — MEASUREMENT</div>
-        <h4>Evaluation</h4>
-        <p>Temporal grounding, event recall/precision, false-alarm rate, calibration, robustness, latency, and cost.</p>
-      </div>
-      <div class="card">
-        <div class="c-index">05 — SYSTEM</div>
-        <h4>Cosmos architecture</h4>
-        <p>Reasoner versus Generator, inference versus training, the model/data/evaluation stack, and distributed execution.</p>
-      </div>
+      <a class="card" href="foundations/video-representations.html">
+        <div class="c-index i18n" data-en="01: REPRESENTATION" data-zh="01: 表征">01: REPRESENTATION</div>
+        <h4 class="i18n" data-en="Video representations" data-zh="视频表征">Video representations</h4>
+        <p class="i18n" data-en="Vision Transformers, spatiotemporal attention, video tokenization, latent diffusion, and temporal consistency." data-zh="视觉 Transformer、时空注意力、视频标记化、隐空间扩散，以及时间一致性。">Vision Transformers, spatiotemporal attention, video tokenization, latent diffusion, and temporal consistency.</p>
+      </a>
+      <a class="card" href="foundations/world-models.html">
+        <div class="c-index i18n" data-en="02: PREDICTION" data-zh="02: 预测">02: PREDICTION</div>
+        <h4 class="i18n" data-en="World models" data-zh="世界模型">World models</h4>
+        <p class="i18n" data-en="State representations, prediction, uncertainty, counterfactual simulation, and planning." data-zh="状态表征、预测、不确定性、反事实模拟，以及规划。">State representations, prediction, uncertainty, counterfactual simulation, and planning.</p>
+      </a>
+      <a class="card" href="foundations/multimodal-physical-ai.html">
+        <div class="c-index i18n" data-en="03: GROUNDING" data-zh="03: 落地">03: GROUNDING</div>
+        <h4 class="i18n" data-en="Multimodal / Physical AI" data-zh="多模态 / 具身智能">Multimodal / Physical AI</h4>
+        <p class="i18n" data-en="Vision-language models, video generation, action-conditioned models, and synthetic data." data-zh="视觉-语言模型、视频生成、以动作为条件的模型，以及合成数据。">Vision-language models, video generation, action-conditioned models, and synthetic data.</p>
+      </a>
+      <a class="card" href="foundations/evaluation.html">
+        <div class="c-index i18n" data-en="04: MEASUREMENT" data-zh="04: 评估">04: MEASUREMENT</div>
+        <h4 class="i18n" data-en="Evaluation" data-zh="评估方法">Evaluation</h4>
+        <p class="i18n" data-en="Temporal grounding, event recall/precision, false-alarm rate, calibration, robustness, latency, and cost." data-zh="时间定位、事件召回率/精确率、误报率、校准度、鲁棒性、延迟，以及成本。">Temporal grounding, event recall/precision, false-alarm rate, calibration, robustness, latency, and cost.</p>
+      </a>
+      <a class="card" href="foundations/cosmos-architecture.html">
+        <div class="c-index i18n" data-en="05: SYSTEM" data-zh="05: 系统">05: SYSTEM</div>
+        <h4 class="i18n" data-en="Cosmos architecture" data-zh="Cosmos 架构">Cosmos architecture</h4>
+        <p class="i18n" data-en="Reasoner versus Generator, inference versus training, the model/data/evaluation stack, and distributed execution." data-zh="推理器与生成器有何不同、推理与训练如何划分、模型/数据/评估这套技术栈，以及分布式执行。">Reasoner versus Generator, inference versus training, the model/data/evaluation stack, and distributed execution.</p>
+      </a>
     </div>
   </div>
 
   <section class="spine">
     <div class="callout">
-      <span class="label">Deliverables — Phase 1</span>
+      <span class="label i18n" data-en="Deliverables: Phase 1" data-zh="交付物: 第一阶段">Deliverables: Phase 1</span>
       <ul>
-        <li><code>research-notes/world-models.md</code> — paper notes and concepts</li>
-        <li><code>research-notes/cosmos-code-map.md</code> — code-path map and execution notes</li>
-        <li>A glossary of 30–50 domain terms, written in your own words</li>
+        <li class="i18n" data-en="<code>research-notes/world-models.md</code>: paper notes and concepts" data-zh="<code>research-notes/world-models.md</code>: 论文笔记与概念梳理">研究笔记与概念梳理</li>
+        <li class="i18n" data-en="<code>research-notes/cosmos-code-map.md</code>: code-path map and execution notes" data-zh="<code>research-notes/cosmos-code-map.md</code>: 代码路径图与执行笔记">代码路径图与执行笔记</li>
+        <li class="i18n" data-en="A glossary of 30–50 domain terms, written in your own words" data-zh="用自己的话写一份包含 30–50 个领域术语的词汇表">用自己的话写一份包含 30–50 个领域术语的词汇表</li>
       </ul>
     </div>
   </section>
 
   <!-- PHASE 2 -->
   <section class="spine">
-    <div class="phase-marker"><span class="num">PHASE 2</span><span class="weeks">OPERATIONAL FLUENCY</span></div>
-    <h2 class="phase-title">Run Cosmos, reproducibly</h2>
-    <p>Move from reading to running. The target is a single fixed experiment you can repeat exactly — same clip, same prompt, same seed — so that every change in output is attributable to something you changed on purpose.</p>
+    <div class="phase-marker"><span class="num i18n" data-en="PHASE 2" data-zh="第二阶段">PHASE 2</span><span class="weeks i18n" data-en="OPERATIONAL FLUENCY" data-zh="实操熟练度">OPERATIONAL FLUENCY</span></div>
+    <h2 class="phase-title i18n" data-en="Run Cosmos, reproducibly" data-zh="以可复现的方式运行 Cosmos">Run Cosmos, reproducibly</h2>
+    <p class="i18n" data-en="Move from reading to running. Build one experiment that you can repeat exactly. Keep the clip, prompt, and seed fixed so that any change in the output can be traced to a deliberate change in the experiment." data-zh="从阅读转向实操。先建立一个可以准确复现的实验，固定测试片段、提示词和随机种子。这样，输出发生变化时，才能追溯到实验中的具体改动。">Move from reading to running. Build one experiment that you can repeat exactly. Keep the clip, prompt, and seed fixed so that any change in the output can be traced to a deliberate change in the experiment.</p>
 
-    <h3>Goals</h3>
+    <h3 class="i18n" data-en="Goals" data-zh="目标">Goals</h3>
     <ul>
-      <li>Install and run a minimal supported Cosmos <strong>inference</strong> flow.</li>
-      <li>Establish one fixed test clip, prompt, seed, hardware record, and output location.</li>
-      <li>Run 20–50 short clips through a structured prompt and record outputs consistently.</li>
-      <li>Categorize errors: missed event, hallucination, temporal error, poor grounding, latency, or infrastructure failure.</li>
+      <li class="i18n" data-en="Install and run a minimal supported Cosmos <strong>inference</strong> flow." data-zh="装好环境，跑通一条官方支持的最小 Cosmos <strong>推理</strong>流程。">Install and run a minimal supported Cosmos <strong>inference</strong> flow.</li>
+      <li class="i18n" data-en="Establish one fixed test clip, prompt, seed, hardware record, and output location." data-zh="把测试片段、提示词、随机种子、硬件记录和输出位置全部固定下来，各定一份。">Establish one fixed test clip, prompt, seed, hardware record, and output location.</li>
+      <li class="i18n" data-en="Run 20–50 short clips through a structured prompt and record outputs consistently." data-zh="用一套结构化提示词跑完 20–50 个短片段，输出结果按统一格式记录下来。">Run 20–50 short clips through a structured prompt and record outputs consistently.</li>
+      <li class="i18n" data-en="Categorize errors: missed event, hallucination, temporal error, poor grounding, latency, or infrastructure failure." data-zh="给出现的错误分类：漏检事件、幻觉、时间判断错误、定位不准、延迟过高，或者基础设施故障。">Categorize errors: missed event, hallucination, temporal error, poor grounding, latency, or infrastructure failure.</li>
     </ul>
 
     <div class="rule-box">
-      <span class="label">Sequencing rule</span>
-      Start with Reasoner-mode work. Do not begin with training or fine-tuning — get the inference path solid and reproducible first.
+      <span class="label i18n" data-en="Sequencing rule" data-zh="顺序规则">Sequencing rule</span>
+      <span class="i18n" data-en="Start with Reasoner-mode work. Do not begin with training or fine-tuning: get the inference path solid and reproducible first." data-zh="先做推理器模式下的工作，不要一上来就碰训练和微调。把推理这条路跑稳、跑到可复现，再谈别的。">Start with Reasoner-mode work. Do not begin with training or fine-tuning: get the inference path solid and reproducible first.</span>
     </div>
   </section>
 
   <div class="wide">
     <div class="diagram-panel">
-      <div class="diagram-caption">Reasoner vs. Generator — where Phase 2 lives</div>
+      <div class="diagram-caption i18n" data-en="Reasoner vs. Generator: where Phase 2 lives" data-zh="推理器（Reasoner）与生成器（Generator）： 第二阶段的定位">Reasoner vs. Generator: where Phase 2 lives</div>
       <div class="pipeline">
         <div class="pipe-node accent">
-          <div class="n-label">Input clip</div>
-          <div class="n-sub">Fixed test clip + prompt + seed</div>
+          <div class="n-label i18n" data-en="Input clip" data-zh="输入片段">Input clip</div>
+          <div class="n-sub i18n" data-en="Fixed test clip + prompt + seed" data-zh="固定测试片段 + 提示词 + 随机种子">Fixed test clip + prompt + seed</div>
         </div>
         <div class="pipe-arrow">→</div>
         <div class="pipe-node accent">
-          <div class="n-label">Cosmos Reasoner</div>
-          <div class="n-sub">Temporal understanding, explanation, evidence</div>
+          <div class="n-label i18n" data-en="Cosmos Reasoner" data-zh="Cosmos 推理器">Cosmos Reasoner</div>
+          <div class="n-sub i18n" data-en="Temporal understanding, explanation, evidence" data-zh="时间理解、解释说明、证据支持">Temporal understanding, explanation, evidence</div>
         </div>
         <div class="pipe-arrow">→</div>
         <div class="pipe-node">
-          <div class="n-label">Structured output</div>
-          <div class="n-sub">Logged, timestamped, hardware-recorded</div>
+          <div class="n-label i18n" data-en="Structured output" data-zh="结构化输出">Structured output</div>
+          <div class="n-sub i18n" data-en="Logged, timestamped, hardware-recorded" data-zh="记录日志、加盖时间戳、记录硬件信息">Logged, timestamped, hardware-recorded</div>
         </div>
         <div class="pipe-arrow">→</div>
         <div class="pipe-node">
-          <div class="n-label">Error taxonomy</div>
-          <div class="n-sub">Missed / hallucinated / temporal / latency</div>
+          <div class="n-label i18n" data-en="Error taxonomy" data-zh="错误分类">Error taxonomy</div>
+          <div class="n-sub i18n" data-en="Missed / hallucinated / temporal / latency" data-zh="漏检 / 幻觉 / 时间错误 / 延迟">Missed / hallucinated / temporal / latency</div>
         </div>
       </div>
     </div>
@@ -773,61 +130,61 @@ hr.rule {
 
   <!-- PHASE 3 -->
   <section class="spine">
-    <div class="phase-marker"><span class="num">PHASE 3</span><span class="weeks">UPSTREAM CONTRIBUTION</span></div>
-    <h2 class="phase-title">Give something back</h2>
-    <p>The last phase turns study into a contribution that stands on its own — useful to anyone using Cosmos, not just to this study path.</p>
+    <div class="phase-marker"><span class="num i18n" data-en="PHASE 3" data-zh="第三阶段">PHASE 3</span><span class="weeks i18n" data-en="UPSTREAM CONTRIBUTION" data-zh="上游贡献">UPSTREAM CONTRIBUTION</span></div>
+    <h2 class="phase-title i18n" data-en="Give something back" data-zh="回馈社区">Give something back</h2>
+    <p class="i18n" data-en="The last phase turns study into a contribution that stands on its own: useful to anyone using Cosmos, not just to this study path." data-zh="最后一个阶段，要把学到的东西变成一份能独立立得住的贡献。它的价值应该面向所有用 Cosmos 的人，而不是只服务于这条学习路径。">The last phase turns study into a contribution that stands on its own: useful to anyone using Cosmos, not just to this study path.</p>
 
-    <h3>Candidate contributions</h3>
+    <h3 class="i18n" data-en="Candidate contributions" data-zh="候选贡献方向">Candidate contributions</h3>
   </section>
 
   <div class="wide">
     <div class="card-grid">
       <div class="card">
         <div class="c-index">A</div>
-        <h4>Data tooling</h4>
-        <p>Adapter or validation tooling for timestamped multi-camera video manifests.</p>
+        <h4 class="i18n" data-en="Data tooling" data-zh="数据工具">Data tooling</h4>
+        <p class="i18n" data-en="Adapter or validation tooling for timestamped multi-camera video manifests." data-zh="给带时间戳的多摄像头视频清单写一套适配器，或者一套校验工具。">Adapter or validation tooling for timestamped multi-camera video manifests.</p>
       </div>
       <div class="card">
         <div class="c-index">B</div>
-        <h4>Evaluation harness</h4>
-        <p>Structured event-evaluation harness with temporal-grounding metrics.</p>
+        <h4 class="i18n" data-en="Evaluation harness" data-zh="评估框架">Evaluation harness</h4>
+        <p class="i18n" data-en="Structured event-evaluation harness with temporal-grounding metrics." data-zh="做一套结构化的事件评估框架，把时间定位指标一并纳进去。">Structured event-evaluation harness with temporal-grounding metrics.</p>
       </div>
       <div class="card">
         <div class="c-index">C</div>
-        <h4>Performance docs</h4>
-        <p>Inference throughput/VRAM profiling, batching, or serving documentation.</p>
+        <h4 class="i18n" data-en="Performance docs" data-zh="性能文档">Performance docs</h4>
+        <p class="i18n" data-en="Inference throughput/VRAM profiling, batching, or serving documentation." data-zh="写推理吞吐与显存的性能分析文档，或者批处理、服务部署方面的文档。">Inference throughput/VRAM profiling, batching, or serving documentation.</p>
       </div>
       <div class="card">
         <div class="c-index">D</div>
-        <h4>Reference integration</h4>
-        <p>An edge-to-Cosmos reference integration example.</p>
+        <h4 class="i18n" data-en="Reference integration" data-zh="参考集成方案">Reference integration</h4>
+        <p class="i18n" data-en="An edge-to-Cosmos reference integration example." data-zh="一个从边缘设备到 Cosmos 的参考集成示例。">An edge-to-Cosmos reference integration example.</p>
       </div>
       <div class="card">
         <div class="c-index">E</div>
-        <h4>DX improvements</h4>
-        <p>Windows/WSL setup, error-message clarity, tests, or documentation fixes.</p>
+        <h4 class="i18n" data-en="DX improvements" data-zh="开发体验改进">DX improvements</h4>
+        <p class="i18n" data-en="Windows/WSL setup, error-message clarity, tests, or documentation fixes." data-zh="改进 Windows/WSL 下的环境配置，把错误提示说清楚，补测试，或者修文档里的问题。">Windows/WSL setup, error-message clarity, tests, or documentation fixes.</p>
       </div>
     </div>
   </div>
 
   <section class="spine">
-    <h3>Contribution sequence</h3>
+    <h3 class="i18n" data-en="Contribution sequence" data-zh="贡献流程">Contribution sequence</h3>
     <div class="sequence">
       <div class="seq-step">
-        <div class="s-title">Read the repository guidance</div>
-        <div class="s-body">Run the relevant test and lint commands before writing anything.</div>
+        <div class="s-title i18n" data-en="Read the repository guidance" data-zh="阅读仓库贡献指南">Read the repository guidance</div>
+        <div class="s-body i18n" data-en="Run the relevant test and lint commands before writing anything." data-zh="一行代码都还没写之前，先把相关的测试和代码检查命令跑一遍。">Run the relevant test and lint commands before writing anything.</div>
       </div>
       <div class="seq-step">
-        <div class="s-title">Find a bounded scope</div>
-        <div class="s-body">Pick an existing issue, or propose a small design in an issue discussion first.</div>
+        <div class="s-title i18n" data-en="Find a bounded scope" data-zh="确定明确的范围">Find a bounded scope</div>
+        <div class="s-body i18n" data-en="Pick an existing issue, or propose a small design in an issue discussion first." data-zh="从已有的 issue 里挑一个来做；或者先在 issue 讨论里把一个小方案提出来。">Pick an existing issue, or propose a small design in an issue discussion first.</div>
       </div>
       <div class="seq-step">
-        <div class="s-title">Submit a focused PR</div>
-        <div class="s-body">Include tests, documentation, and reproducible commands.</div>
+        <div class="s-title i18n" data-en="Submit a focused PR" data-zh="提交聚焦的 PR">Submit a focused PR</div>
+        <div class="s-body i18n" data-en="Include tests, documentation, and reproducible commands." data-zh="测试、文档、可复现的操作命令，三样都要带上。">Include tests, documentation, and reproducible commands.</div>
       </div>
       <div class="seq-step">
-        <div class="s-title">Stay narrow</div>
-        <div class="s-body">Avoid broad refactors as a first contribution — small and mergeable beats ambitious and stalled.</div>
+        <div class="s-title i18n" data-en="Stay narrow" data-zh="保持范围小而聚焦">Stay narrow</div>
+        <div class="s-body i18n" data-en="Avoid broad refactors as a first contribution: small and mergeable beats ambitious and stalled." data-zh="第一次贡献别碰大范围重构。小而能合进去，远胜过野心大却卡着不动。">Avoid broad refactors as a first contribution: small and mergeable beats ambitious and stalled.</div>
       </div>
     </div>
   </section>
@@ -836,14 +193,14 @@ hr.rule {
 
   <!-- TIMELINE -->
   <section class="spine">
-    <div class="phase-marker" style="margin-top:0;"><span class="num">OVERVIEW</span><span class="weeks">SUGGESTED PACING</span></div>
-    <h2 class="phase-title">A twelve-week arc</h2>
-    <p>These durations are a starting scaffold, not a deadline — stretch any phase that needs more depth. Weeks are relative to when you begin, not calendar-fixed.</p>
+    <div class="phase-marker" style="margin-top:0;"><span class="num i18n" data-en="OVERVIEW" data-zh="总览">OVERVIEW</span><span class="weeks i18n" data-en="SUGGESTED PACING" data-zh="建议节奏">SUGGESTED PACING</span></div>
+    <h2 class="phase-title i18n" data-en="A twelve-week arc" data-zh="十二周学习安排">A twelve-week arc</h2>
+    <p class="i18n" data-en="These durations are a starting scaffold, not a deadline: stretch any phase that needs more depth. Weeks are relative to when you begin, not calendar-fixed." data-zh="这里的时长只是一个起步框架，不是死线。哪个阶段需要往深里挖，就把它拉长。周数按你自己开始的那天往后算，不对应任何固定的日历日期。">These durations are a starting scaffold, not a deadline: stretch any phase that needs more depth. Weeks are relative to when you begin, not calendar-fixed.</p>
   </section>
 
   <div class="wide">
     <div class="diagram-panel" style="padding-bottom: 1rem;">
-      <div class="diagram-caption">Phase duration, in study-weeks</div>
+      <div class="diagram-caption i18n" data-en="Phase duration, in study-weeks" data-zh="各阶段时长（以学习周计）">Phase duration, in study-weeks</div>
       <div class="tl-ruler">
         <div></div>
         <div class="tl-ruler-track">
@@ -852,21 +209,21 @@ hr.rule {
       </div>
       <div class="timeline">
         <div class="tl-row">
-          <div class="tl-label">Phase 1</div>
+          <div class="tl-label i18n" data-en="Phase 1" data-zh="第一阶段">Phase 1</div>
           <div class="tl-track">
-            <div class="tl-bar" style="width: 33%;">Foundations · W1–4</div>
+            <div class="tl-bar i18n" style="width: 33%;" data-en="Foundations · W1–4" data-zh="基础 · 第1–4周">Foundations · W1–4</div>
           </div>
         </div>
         <div class="tl-row amber">
-          <div class="tl-label">Phase 2</div>
+          <div class="tl-label i18n" data-en="Phase 2" data-zh="第二阶段">Phase 2</div>
           <div class="tl-track" style="padding-left: calc(0.75rem + 25%);">
-            <div class="tl-bar" style="width: 33%;">Fluency · W4–8</div>
+            <div class="tl-bar i18n" style="width: 33%;" data-en="Fluency · W4–8" data-zh="熟练度 · 第4–8周">Fluency · W4–8</div>
           </div>
         </div>
         <div class="tl-row">
-          <div class="tl-label">Phase 3</div>
+          <div class="tl-label i18n" data-en="Phase 3" data-zh="第三阶段">Phase 3</div>
           <div class="tl-track" style="padding-left: calc(0.75rem + 58%);">
-            <div class="tl-bar" style="width: 34%;">Contribution · W8–12+</div>
+            <div class="tl-bar i18n" style="width: 34%;" data-en="Contribution · W8–12+" data-zh="贡献 · 第8–12+周">Contribution · W8–12+</div>
           </div>
         </div>
       </div>
@@ -875,20 +232,20 @@ hr.rule {
 
   <!-- WEEKLY RHYTHM -->
   <section class="spine">
-    <h3>Weekly operating rhythm</h3>
-    <p>A suggested split of study sessions per week — adjust the count, keep the ratio.</p>
+    <h3 class="i18n" data-en="Weekly operating rhythm" data-zh="每周节奏安排">Weekly operating rhythm</h3>
+    <p class="i18n" data-en="A suggested split of study sessions per week: adjust the count, keep the ratio." data-zh="下面是每周学习单元的建议分配。总数可以按自己的情况增减，但各项之间的比例最好保持不变。">A suggested split of study sessions per week: adjust the count, keep the ratio.</p>
   </section>
 
   <div class="wide">
     <table class="rhythm-table">
       <thead>
-        <tr><th>Cadence</th><th>Activity</th></tr>
+        <tr><th class="i18n" data-en="Cadence" data-zh="频次">Cadence</th><th class="i18n" data-en="Activity" data-zh="活动内容">Activity</th></tr>
       </thead>
       <tbody>
-        <tr><td>2× sessions</td><td>Papers and source reading — write concise notes and open questions</td></tr>
-        <tr><td>2× sessions</td><td>Reproduce, profile, or instrument a Cosmos workflow</td></tr>
-        <tr><td>1× session</td><td>Contribution work — issue scoping, implementation, or PR polish</td></tr>
-        <tr><td>1× short session</td><td>Upstream issue/PR review and next-week planning</td></tr>
+        <tr><td class="i18n" data-en="2× sessions" data-zh="2 个单元">2× sessions</td><td class="i18n" data-en="Papers and source reading: write concise notes and open questions" data-zh="读论文、读源码：记下要点，也记下没想明白的问题">Papers and source reading: write concise notes and open questions</td></tr>
+        <tr><td class="i18n" data-en="2× sessions" data-zh="2 个单元">2× sessions</td><td class="i18n" data-en="Reproduce, profile, or instrument a Cosmos workflow" data-zh="复现某个 Cosmos 工作流，做性能分析，或者给它加上监测手段">Reproduce, profile, or instrument a Cosmos workflow</td></tr>
+        <tr><td class="i18n" data-en="1× session" data-zh="1 个单元">1× session</td><td class="i18n" data-en="Contribution work: issue scoping, implementation, or PR polish" data-zh="贡献相关的活儿：界定 issue 范围、写实现，或者打磨 PR">Contribution work: issue scoping, implementation, or PR polish</td></tr>
+        <tr><td class="i18n" data-en="1× short session" data-zh="1 个短单元">1× short session</td><td class="i18n" data-en="Upstream issue/PR review and next-week planning" data-zh="过一遍上游的 issue 和 PR，顺便把下一周安排好">Upstream issue/PR review and next-week planning</td></tr>
       </tbody>
     </table>
   </div>
@@ -897,43 +254,21 @@ hr.rule {
     <div class="glossary-note">
       <div class="g-icon">§</div>
       <div>
-        <strong style="color:var(--text-bright);">Decision rules to carry through every phase</strong>
-        <p style="margin: 0.5rem 0 0; font-size: 0.92rem;">Prefer Cosmos Reasoner for selected clips before attempting continuous video analysis or full world simulation. Treat synthetic data as an experiment whose value must be proven against held-out real footage — never as ground truth by default.</p>
+        <strong class="i18n" style="color:var(--text-bright);" data-en="Decision rules to carry through every phase" data-zh="贯穿每个阶段的决策原则">Decision rules to carry through every phase</strong>
+        <p class="i18n" style="margin: 0.5rem 0 0; font-size: 0.92rem;" data-en="Test Cosmos Reasoner on selected clips before attempting continuous video analysis or full world simulation. Evaluate synthetic data against held-out real footage before using it. Do not assume that it is ground truth." data-zh="先用选定的片段测试 Cosmos Reasoner，再考虑连续视频分析或完整的世界模拟。使用合成数据前，应在留出的真实素材上验证其效果，不能直接把它当作真值。">Test Cosmos Reasoner on selected clips before attempting continuous video analysis or full world simulation. Evaluate synthetic data against held-out real footage before using it. Do not assume that it is ground truth.</p>
       </div>
     </div>
   </section>
 
   <footer class="colophon">
     <div class="colophon-inner">
-      <p>REFERENCE STACK</p>
+      <p class="i18n" data-en="REFERENCE STACK" data-zh="参考资料">REFERENCE STACK</p>
       <ul class="refs">
-        <li><span class="r-tag">[docs]</span> <a href="https://www.nvidia.com/en-us/ai/cosmos/">NVIDIA Cosmos overview</a></li>
-        <li><span class="r-tag">[docs]</span> <a href="https://docs.nvidia.com/cosmos/latest/introduction.html">Cosmos documentation</a></li>
+        <li><span class="r-tag">[docs]</span> <a href="https://www.nvidia.com/en-us/ai/cosmos/" class="i18n" data-en="NVIDIA Cosmos overview" data-zh="NVIDIA Cosmos 概览">NVIDIA Cosmos overview</a></li>
+        <li><span class="r-tag">[docs]</span> <a href="https://docs.nvidia.com/cosmos/latest/introduction.html" class="i18n" data-en="Cosmos documentation" data-zh="Cosmos 官方文档">Cosmos documentation</a></li>
         <li><span class="r-tag">[repo]</span> <a href="https://github.com/nvidia/cosmos">github.com/nvidia/cosmos</a></li>
         <li><span class="r-tag">[repo]</span> <a href="https://github.com/NVIDIA/cosmos-framework">github.com/NVIDIA/cosmos-framework</a></li>
       </ul>
     </div>
   </footer>
 </main>
-
-<script>
-(function () {
-  var root = document.documentElement;
-  var btn = document.getElementById('themeToggle');
-  var label = document.getElementById('themeToggleLabel');
-
-  function sync() {
-    var isDark = root.getAttribute('data-theme') !== 'light';
-    label.textContent = isDark ? 'Dark' : 'Light';
-  }
-
-  btn.addEventListener('click', function () {
-    var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    root.setAttribute('data-theme', next);
-    localStorage.setItem('wm-theme', next);
-    sync();
-  });
-
-  sync();
-})();
-</script>

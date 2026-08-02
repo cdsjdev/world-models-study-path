@@ -1,0 +1,152 @@
+<title>Evaluation: World Models &amp; Cosmos</title>
+<link rel="stylesheet" href="../assets/site.css">
+<script src="../assets/site.js" defer></script>
+
+<div class="grain"></div>
+
+<button class="lang-toggle" id="langToggle" type="button" aria-label="Switch between English and Chinese">
+  <span id="langToggleLabel">中文</span>
+</button>
+
+<button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle light and dark theme">
+  <span class="tt-dot"></span>
+  <span id="themeToggleLabel">Dark</span>
+</button>
+
+<header class="masthead compact">
+  <div class="masthead-inner">
+    <a class="crumb i18n" href="../index.html" data-en="<span class=&quot;arrow&quot;>←</span> Study Path" data-zh="<span class=&quot;arrow&quot;>←</span> 返回学习路径"><span class="arrow">←</span> Study Path</a>
+    <div class="eyebrow i18n" data-en="Phase 1 · Topic 04" data-zh="第一阶段 · 主题 04">Phase 1 · Topic 04</div>
+    <h1 class="title i18n" data-en="Evaluation" data-zh="评估方法">Evaluation</h1>
+    <p class="dek i18n" data-en="A model that looks impressive in a demo and a model that is trustworthy in production are judged by different numbers. This topic is the measurement discipline that keeps the rest of the study path honest." data-zh="演示效果出色，并不等于模型在生产环境中值得信赖；两者需要不同的指标来判断。本主题介绍贯穿后续学习的评估方法。">A model that looks impressive in a demo and a model that is trustworthy in production are judged by different numbers. This topic is the measurement discipline that keeps the rest of the study path honest.</p>
+  </div>
+</header>
+
+<main>
+  <article class="article">
+
+    <h2 class="i18n" data-en="Why evaluation is its own topic" data-zh="为什么评估值得单独作为一个主题">Why evaluation is its own topic</h2>
+    <p class="i18n" data-en="Every capability introduced so far: representation, prediction, multimodal grounding: can fail silently. A video model can produce a fluent, confident, wrong answer. A generator can produce a beautiful, physically implausible clip. Without a measurement discipline, the only signal you have is <em>does this look right to me</em>, which does not scale, does not catch rare failure modes, and does not transfer between people. Evaluation is what turns \"looks good\" into a number you can track, compare, and set a gate on." data-zh="前面讲过的能力：表征、预测、多模态落地：有一个共同的毛病：都可能不声不响地失败。视频模型能给出一个流畅、笃定、但完全错误的答案；生成器能产出一段画面漂亮、物理上却荒唐的片段。手里没有一套度量方法，你能依靠的就只剩<em>我看着对不对</em>这一条。可这条既撑不起规模，又抓不住罕见的失效，还换个人就换个说法。评估要做的，正是把“看起来不错”变成一个能追踪、能比较、能设门槛的数字。">Every capability introduced so far: representation, prediction, multimodal grounding: can fail silently. A video model can produce a fluent, confident, wrong answer. A generator can produce a beautiful, physically implausible clip. Without a measurement discipline, the only signal you have is <em>does this look right to me</em>, which does not scale, does not catch rare failure modes, and does not transfer between people. Evaluation is what turns "looks good" into a number you can track, compare, and set a gate on.</p>
+
+    <h2 class="i18n" data-en="Temporal grounding" data-zh="时间定位">Temporal grounding</h2>
+    <p class="i18n" data-en="Temporal grounding measures whether a model's claim about <em>when</em> something happened in a video is actually correct: not just whether it correctly describes that something happened. If a model reports \"a vehicle stopped in the lane\" with an evidence timestamp of 0:14–0:19, temporal grounding asks: did the vehicle actually stop during that window, or is the model pattern-matching a plausible-sounding timestamp onto a real event that happened somewhere else in the clip?" data-zh="时间定位查的是模型关于某件事<em>何时</em>发生的说法准不准，而不是它有没有把“发生了这件事”描述对。举个例子：模型报告“有一辆车停在车道上”，并给出 0:14–0:19 这个证据时间戳。时间定位要追问的是：车真的是在这段窗口里停下的吗？还是模型不过是给一个确实发生过、但发生在片段别处的事件，随手贴了个听着合理的时间戳？">Temporal grounding measures whether a model's claim about <em>when</em> something happened in a video is actually correct: not just whether it correctly describes that something happened. If a model reports "a vehicle stopped in the lane" with an evidence timestamp of 0:14–0:19, temporal grounding asks: did the vehicle actually stop during that window, or is the model pattern-matching a plausible-sounding timestamp onto a real event that happened somewhere else in the clip?</p>
+    <p class="i18n" data-en="It is typically measured with <strong>Intersection over Union (IoU)</strong> between the model's predicted time span and the ground-truth time span, thresholded at some minimum overlap (e.g. IoU ≥ 0.5 counts as \"grounded correctly\"). This matters enormously for an operator-review workflow: an operator who is handed the wrong ten seconds of footage to review has effectively been given a false lead." data-zh="常用的度量是<strong>交并比（Intersection over Union，简称 IoU）</strong>：拿模型预测的时间区间和真实标注的区间算重叠，再卡一个最小阈值，比如 IoU ≥ 0.5 才算“定位正确”。这件事对操作员审核流程的影响特别大：把错误的那十秒素材推给操作员去看，等于直接给了他一条假线索。">It is typically measured with <strong>Intersection over Union (IoU)</strong> between the model's predicted time span and the ground-truth time span, thresholded at some minimum overlap (e.g. IoU ≥ 0.5 counts as "grounded correctly"). This matters enormously for an operator-review workflow: an operator who is handed the wrong ten seconds of footage to review has effectively been given a false lead.</p>
+
+    <h2 class="i18n" data-en="Event recall, precision, and false-alarm rate" data-zh="事件召回率、精确率与误报率">Event recall, precision, and false-alarm rate</h2>
+    <p class="i18n" data-en="These three metrics form the core of any detection-style evaluation and are best understood together, because optimizing any one in isolation is easy and usually wrong." data-zh="检测类评估的核心就是这三项，必须放在一起看。单挑其中一项去优化，太容易做到了，也几乎注定是错的。">These three metrics form the core of any detection-style evaluation and are best understood together, because optimizing any one in isolation is easy and usually wrong.</p>
+
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr><th class="i18n" data-en="Metric" data-zh="指标">Metric</th><th class="i18n" data-en="Question it answers" data-zh="它回答的问题">Question it answers</th><th class="i18n" data-en="Failure if ignored" data-zh="忽视它会导致的失效">Failure if ignored</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="i18n" data-en="Recall" data-zh="召回率">Recall</td>
+            <td class="i18n" data-en="Of all real events, what fraction did the model catch?" data-zh="真实发生的事件里，模型抓到了多少？">Of all real events, what fraction did the model catch?</td>
+            <td class="i18n" data-en="A model that stays silent scores perfect precision but is useless." data-zh="一个从不出声的模型，精确率满分，可它一点用都没有。">A model that stays silent scores perfect precision but is useless.</td>
+          </tr>
+          <tr>
+            <td class="i18n" data-en="Precision" data-zh="精确率">Precision</td>
+            <td class="i18n" data-en="Of everything the model flagged, what fraction was real?" data-zh="模型标出来的这些，有多少是真的？">Of everything the model flagged, what fraction was real?</td>
+            <td class="i18n" data-en="A model that flags everything scores perfect recall but drowns operators in noise." data-zh="若模型把所有情况都标为事件，召回率可以达到满分，却会让操作人员面对大量无效警报。">A model that flags everything scores perfect recall but drowns operators in noise.</td>
+          </tr>
+          <tr>
+            <td class="i18n" data-en="False-alarm rate" data-zh="误报率">False-alarm rate</td>
+            <td class="i18n" data-en="How often does the model raise an alert with nothing real behind it, per unit of time or per clip?" data-zh="每单位时间、或者每段片段里，模型有多频繁地报出一个“实际上没有真实事件”的警报？">How often does the model raise an alert with nothing real behind it, per unit of time or per clip?</td>
+            <td class="i18n" data-en="Directly determines whether operators start ignoring the system (alert fatigue)." data-zh="直接决定了操作员会不会开始无视这套系统（也就是“警报疲劳”）。">Directly determines whether operators start ignoring the system (alert fatigue).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="i18n" data-en="Recall and precision trade off against each other through the model's confidence threshold: reporting more events raises recall and lowers precision, and vice versa. This is exactly why single-number summaries (like accuracy) are misleading for event detection, and why a real evaluation reports the trade-off curve, or fixes an operating point and reports both numbers at that point." data-zh="召回率和精确率是通过置信度阈值互相拉扯的：报的事件多了，召回率上去、精确率下来，反之亦然。所以拿单个数字（比如准确率）来概括事件检测，是有误导性的；像样的评估要么给出整条权衡曲线，要么定一个操作点，在这个点上把两个数一起报出来。">Recall and precision trade off against each other through the model's confidence threshold: reporting more events raises recall and lowers precision, and vice versa. This is exactly why single-number summaries (like accuracy) are misleading for event detection, and why a real evaluation reports the trade-off curve, or fixes an operating point and reports both numbers at that point.</p>
+
+    <h2 class="i18n" data-en="Calibration" data-zh="校准">Calibration</h2>
+    <p class="i18n" data-en="Calibration measures whether a model's stated confidence matches its actual accuracy: introduced conceptually in the world models topic, and here made measurable. If you bucket all predictions where the model said \"80% confident\" and check how often those predictions were actually correct, a well-calibrated model should be right about 80% of the time in that bucket. A poorly calibrated model might say 80% confident and be right only 40% of the time: <strong>overconfident</strong>: or say 80% and be right 98% of the time: <strong>underconfident</strong>." data-zh="校准衡量的是模型自称的置信度对不对得上它的实际准确率：这个概念在“世界模型”那一主题里已经提过，这里把它变成可以量的东西。如果你把模型声称“80% 置信”的预测都归到一个桶里，再看这一桶实际对了多少，校准良好的模型在这个桶里应该大约有 80% 是对的。校准不好的模型，可能嘴上说 80%、实际只对了 40%：这叫<strong>过度自信</strong>；也可能说 80%、实际对了 98%：这叫<strong>信心不足</strong>。">Calibration measures whether a model's stated confidence matches its actual accuracy: introduced conceptually in the world models topic, and here made measurable. If you bucket all predictions where the model said "80% confident" and check how often those predictions were actually correct, a well-calibrated model should be right about 80% of the time in that bucket. A poorly calibrated model might say 80% confident and be right only 40% of the time: <strong>overconfident</strong>: or say 80% and be right 98% of the time: <strong>underconfident</strong>.</p>
+    <p class="i18n" data-en="This is not a cosmetic detail. A downstream system that supports an <code>uncertain</code> result and routes it to human review is only as good as the calibration of the confidence score driving that routing: miscalibration either buries real events under \"confident\" wrong answers or floods operators with unnecessary reviews of predictions that were actually fine." data-zh="这不是个可有可无的细节。下游系统如果支持 <code>uncertain</code>（不确定）这个结果、并把它转给人工审核，那这套机制的可靠程度，完全取决于驱动路由的那个置信度分数校准得如何：校准不好，要么真实事件被埋在一堆“看似自信”的错误答案底下，要么操作员被一堆本来就没问题的预测反复叫去做无谓的复核。">This is not a cosmetic detail. A downstream system that supports an <code>uncertain</code> result and routes it to human review is only as good as the calibration of the confidence score driving that routing: miscalibration either buries real events under "confident" wrong answers or floods operators with unnecessary reviews of predictions that were actually fine.</p>
+
+    <h2 class="i18n" data-en="Robustness" data-zh="鲁棒性">Robustness</h2>
+    <p class="i18n" data-en="Robustness measures how much performance degrades under conditions that differ from the training distribution: lighting changes, camera angle, weather, sensor noise, compression artifacts, or an unfamiliar location. A model evaluated only on clean, well-lit, familiar footage tells you almost nothing about how it will perform on the messy real-world clips it will actually receive in production." data-zh="鲁棒性衡量的是：条件一旦偏离训练分布：光照变了、机位变了、天气、传感器噪声、压缩伪影，或者换了个没见过的场地：性能会掉多少。一个只在干净、光照良好、熟悉素材上评估过的模型，几乎不能说明它在生产环境里那些乱糟糟的真实片段上会是什么表现。">Robustness measures how much performance degrades under conditions that differ from the training distribution: lighting changes, camera angle, weather, sensor noise, compression artifacts, or an unfamiliar location. A model evaluated only on clean, well-lit, familiar footage tells you almost nothing about how it will perform on the messy real-world clips it will actually receive in production.</p>
+    <p class="i18n" data-en="Robustness is typically reported as a performance <em>delta</em>: accuracy on a clean held-out set minus accuracy on a stress-test set built from deliberately harder conditions. This is also where the multimodal topic's synthetic-data caution reconnects: synthetic night/rain/fog variants are tempting robustness test data, but only if you've already confirmed the generator's variants are physically representative, not just visually plausible." data-zh="鲁棒性一般以性能<em>差值</em>的形式报告：干净留出集上的准确率，减去刻意构造的高难度压力测试集上的准确率。这里正好接回“多模态”主题里关于合成数据的那条警示：合成的夜间/雨天/雾天变体，拿来当鲁棒性测试数据很有诱惑力，但前提是你已经确认过：生成器产出的这些变体在物理上确实有代表性，而不只是看着像。">Robustness is typically reported as a performance <em>delta</em>: accuracy on a clean held-out set minus accuracy on a stress-test set built from deliberately harder conditions. This is also where the multimodal topic's synthetic-data caution reconnects: synthetic night/rain/fog variants are tempting robustness test data, but only if you've already confirmed the generator's variants are physically representative, not just visually plausible.</p>
+
+    <h2 class="i18n" data-en="Latency and cost" data-zh="延迟与成本">Latency and cost</h2>
+    <p class="i18n" data-en="A model can be accurate, well-calibrated, and robust and still be operationally useless if it is too slow or too expensive to run at the required scale. These two metrics are the ones most often skipped in a research-oriented evaluation and most often decisive in an operational one." data-zh="一个模型可以又准、校准又好、鲁棒性又强，但只要跑得太慢或者太贵、撑不起所需的规模，在实际运营中依然没用。这两项指标恰恰是研究导向的评估里最常被跳过、而在运营评估里最常一锤定音的。">A model can be accurate, well-calibrated, and robust and still be operationally useless if it is too slow or too expensive to run at the required scale. These two metrics are the ones most often skipped in a research-oriented evaluation and most often decisive in an operational one.</p>
+    <ul>
+      <li class="i18n" data-en="<strong>Latency</strong>: end-to-end time from clip arrival to structured output, broken down by stage (upload, inference, postprocessing) so you know where time is actually spent." data-zh="<strong>延迟</strong>：从片段进来到结构化输出出来的端到端耗时，并按阶段拆开看（上传、推理、后处理），这样才知道时间到底花在哪儿了。"><strong>Latency</strong>: end-to-end time from clip arrival to structured output, broken down by stage (upload, inference, postprocessing) so you know where time is actually spent.</li>
+      <li class="i18n" data-en="<strong>Cost</strong>: GPU-time or dollar cost per event evaluated, which determines whether a promising accuracy number is actually affordable to run continuously at the target scale (e.g. 10-20 poles running around the clock)." data-zh="<strong>成本</strong>：每评估一个事件要花掉多少 GPU 时长或多少钱。它决定了一个看着很漂亮的准确率数字，在目标规模上持续跑（比如 10-20 根灯杆全天候运行）到底负不负担得起。"><strong>Cost</strong>: GPU-time or dollar cost per event evaluated, which determines whether a promising accuracy number is actually affordable to run continuously at the target scale (e.g. 10-20 poles running around the clock).</li>
+    </ul>
+
+    <h2 class="i18n" data-en="Composing the metrics into a gate" data-zh="把各项指标组合成一道门槛">Composing the metrics into a gate</h2>
+    <p class="i18n" data-en="No single metric above is sufficient on its own: the discipline is in reading them together as a profile, not cherry-picking the best-looking number. A useful mental model: recall and precision describe whether the model finds the right things; calibration describes whether you can trust its confidence when it does; robustness describes whether that performance holds up outside the clean test set; latency and cost describe whether any of it is deployable." data-zh="上面任何单独一项都不足以下结论：真正的功夫在于把它们当成一整幅画像来读，而不是挑一个最好看的数字。一个好用的思维框架是：召回率和精确率说的是模型有没有找对东西；校准说的是它找对时给出的置信度值不值得信；鲁棒性说的是这份表现出了干净测试集还立不立得住；延迟和成本说的是这一切到底能不能上线。">No single metric above is sufficient on its own: the discipline is in reading them together as a profile, not cherry-picking the best-looking number. A useful mental model: recall and precision describe whether the model finds the right things; calibration describes whether you can trust its confidence when it does; robustness describes whether that performance holds up outside the clean test set; latency and cost describe whether any of it is deployable.</p>
+
+    <div class="diagram-panel">
+      <div class="diagram-caption i18n" data-en="Reading an evaluation report end to end" data-zh="端到端阅读一份评估报告">Reading an evaluation report end to end</div>
+      <div class="pipeline">
+        <div class="pipe-node">
+          <div class="n-label i18n" data-en="Does it find events?" data-zh="能否找到事件？">Does it find events?</div>
+          <div class="n-sub i18n" data-en="Recall / precision" data-zh="召回率 / 精确率">Recall / precision</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node">
+          <div class="n-label i18n" data-en="Is when correct?" data-zh="时间是否正确？">Is when correct?</div>
+          <div class="n-sub i18n" data-en="Temporal grounding" data-zh="时间定位">Temporal grounding</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node accent">
+          <div class="n-label i18n" data-en="Can I trust the confidence?" data-zh="能否信任置信度？">Can I trust the confidence?</div>
+          <div class="n-sub i18n" data-en="Calibration" data-zh="校准">Calibration</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node">
+          <div class="n-label i18n" data-en="Does it hold up?" data-zh="换了苛刻条件还立得住吗？">Does it hold up?</div>
+          <div class="n-sub i18n" data-en="Robustness" data-zh="鲁棒性">Robustness</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node">
+          <div class="n-label i18n" data-en="Can I afford it?" data-zh="是否负担得起？">Can I afford it?</div>
+          <div class="n-sub i18n" data-en="Latency / cost" data-zh="延迟 / 成本">Latency / cost</div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="i18n" data-en="Glossary" data-zh="术语表">Glossary</h2>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr><th class="i18n" data-en="Term" data-zh="术语">Term</th><th class="i18n" data-en="Meaning" data-zh="含义">Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>IoU</code></td><td class="i18n" data-en="Intersection over Union: overlap ratio between a predicted and true time span or region." data-zh="交并比，衡量预测的时间区间或区域跟真实的那个重叠了多少。">Intersection over Union: overlap ratio between a predicted and true time span or region.</td></tr>
+          <tr><td><code>Recall</code></td><td class="i18n" data-en="Fraction of real events the model successfully caught." data-zh="真实事件中被模型成功抓到的那部分占多大比例。">Fraction of real events the model successfully caught.</td></tr>
+          <tr><td><code>Precision</code></td><td class="i18n" data-en="Fraction of flagged events that were actually real." data-zh="被标出来的事件里，真正属实的那部分占多大比例。">Fraction of flagged events that were actually real.</td></tr>
+          <tr><td><code>Calibration</code></td><td class="i18n" data-en="Agreement between stated confidence and actual accuracy." data-zh="模型给出的置信度与实际准确率之间的一致程度。">Agreement between stated confidence and actual accuracy.</td></tr>
+          <tr><td><code>Alert fatigue</code></td><td class="i18n" data-en="Operators tuning out a system's alerts due to high false-alarm rate." data-zh="误报率太高，操作员慢慢就对系统的警报麻木了、不再当回事。">Operators tuning out a system's alerts due to high false-alarm rate.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="i18n" data-en="Study checklist" data-zh="学习检查清单">Study checklist</h2>
+    <div class="callout">
+      <span class="label i18n" data-en="Before moving on, you should be able to" data-zh="继续下一节之前，你应该能够">Before moving on, you should be able to</span>
+      <ul>
+        <li class="i18n" data-en="Explain the difference between temporal grounding and simple event detection." data-zh="讲清楚时间定位和单纯的事件检测差在哪里。">Explain the difference between temporal grounding and simple event detection.</li>
+        <li class="i18n" data-en="Describe why recall, precision, and false-alarm rate must be read together." data-zh="说清为什么召回率、精确率和误报率必须放在一起看。">Describe why recall, precision, and false-alarm rate must be read together.</li>
+        <li class="i18n" data-en="Explain what it means for a model to be overconfident versus underconfident." data-zh="解释一个模型“过度自信”和“信心不足”分别是什么意思。">Explain what it means for a model to be overconfident versus underconfident.</li>
+        <li class="i18n" data-en="Name all five metric families and put them in the order you'd check them for a new model." data-zh="说出五类指标，并按你评估一个新模型时会检查的先后顺序排出来。">Name all five metric families and put them in the order you'd check them for a new model.</li>
+      </ul>
+    </div>
+
+    <nav class="article-nav">
+      <a href="multimodal-physical-ai.html">
+        <span class="dir i18n" data-en="Previous topic" data-zh="上一主题">Previous topic</span>
+        <span class="to i18n" data-en="← Multimodal / Physical AI" data-zh="← 多模态 / 具身智能">← Multimodal / Physical AI</span>
+      </a>
+      <a class="next" href="cosmos-architecture.html">
+        <span class="dir i18n" data-en="Next topic" data-zh="下一主题">Next topic</span>
+        <span class="to i18n" data-en="Cosmos Architecture →" data-zh="Cosmos 架构 →">Cosmos Architecture →</span>
+      </a>
+    </nav>
+
+  </article>
+</main>

@@ -1,0 +1,135 @@
+<title>Multimodal / Physical AI: World Models &amp; Cosmos</title>
+<link rel="stylesheet" href="../assets/site.css">
+<script src="../assets/site.js" defer></script>
+
+<div class="grain"></div>
+
+<button class="lang-toggle" id="langToggle" type="button" aria-label="Switch between English and Chinese">
+  <span id="langToggleLabel">中文</span>
+</button>
+
+<button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle light and dark theme">
+  <span class="tt-dot"></span>
+  <span id="themeToggleLabel">Dark</span>
+</button>
+
+<header class="masthead compact">
+  <div class="masthead-inner">
+    <a class="crumb i18n" href="../index.html" data-en="<span class=&quot;arrow&quot;>←</span> Study Path" data-zh="<span class=&quot;arrow&quot;>←</span> 返回学习路径"><span class="arrow">←</span> Study Path</a>
+    <div class="eyebrow i18n" data-en="Phase 1 · Topic 03" data-zh="第一阶段 · 主题 03">Phase 1 · Topic 03</div>
+    <h1 class="title i18n" data-en="Multimodal / Physical AI" data-zh="多模态 / 具身智能">Multimodal / Physical AI</h1>
+    <p class="dek i18n" data-en="Connecting vision to language, video understanding to video generation, and passive observation to action-conditioned prediction: the grounding layer between a world model and the physical world it describes." data-zh="视觉接上语言，视频理解接上视频生成，被动观察接上以动作为条件的预测。世界模型和它所描述的物理世界之间，靠的就是这一层来落地。">Connecting vision to language, video understanding to video generation, and passive observation to action-conditioned prediction: the grounding layer between a world model and the physical world it describes.</p>
+  </div>
+</header>
+
+<main>
+  <article class="article">
+
+    <h2 class="i18n" data-en="What \"multimodal\" means here" data-zh="这里的“多模态”是什么意思">What "multimodal" means here</h2>
+    <p class="i18n" data-en="A video representation captures what a camera sees. A world model reasons about how that scene evolves. Neither, by itself, connects to human-readable language or to the world beyond the camera's field of view. <strong>Multimodal models</strong> close that gap by learning a shared representation space across modalities: most commonly vision and language. This ensures that an image or video and a text description of it end up close together in the same embedding space." data-zh="视频表征管的是摄像头看到了什么，世界模型管的是这个场景接下来怎么演变。可这两样单独拿出来，既接不上人能读懂的语言，也接不上镜头视野之外的世界。补上这道缺口的是<strong>多模态模型</strong>：它跨模态学一个共享的表示空间，最常见的组合就是视觉加语言，学成之后，一张图像或一段视频，会和描述它的那段文字落在同一个嵌入空间里彼此相邻的位置。">A video representation captures what a camera sees. A world model reasons about how that scene evolves. Neither, by itself, connects to human-readable language or to the world beyond the camera's field of view. <strong>Multimodal models</strong> close that gap by learning a shared representation space across modalities: most commonly vision and language. This ensures that an image or video and a text description of it end up close together in the same embedding space.</p>
+    <p class="i18n" data-en="\"Physical AI\" is NVIDIA's term for the further step: models that don't just describe the physical world in language, but connect perception to physically grounded action or simulation: robots, autonomous systems, and camera-driven infrastructure that has to reason about real, embodied consequences, not just generate plausible-looking pictures." data-zh="再往前一步，NVIDIA 给了个名字叫“具身智能（Physical AI）”：这类模型不满足于用语言把物理世界描述一遍，而要把感知直接接到有物理落地意义的行动或模拟上。机器人、自主系统、以摄像头为核心的基础设施都算在内。它们要推理的是真实的、具身的后果，而不是生成几张看着像那么回事的画面。">"Physical AI" is NVIDIA's term for the further step: models that don't just describe the physical world in language, but connect perception to physically grounded action or simulation: robots, autonomous systems, and camera-driven infrastructure that has to reason about real, embodied consequences, not just generate plausible-looking pictures.</p>
+
+    <h2 class="i18n" data-en="Vision-language models: how the connection is learned" data-zh="视觉-语言模型：这种连接是如何学到的">Vision-language models: how the connection is learned</h2>
+    <p class="i18n" data-en="The dominant recipe (established by CLIP and its successors) trains two encoders: one for images, one for text: with a <strong>contrastive objective</strong>: for a batch of (image, caption) pairs, push each image's embedding close to its matching caption's embedding, and push it away from every other caption in the batch. No manual labels beyond naturally occurring image-caption pairs are required." data-zh="主流做法由 CLIP 及其后续工作确立：训两个编码器，一个吃图像，一个吃文本，用的是<strong>对比学习目标（contrastive objective）</strong>。给一批（图像，描述文字）配对，让每张图像的嵌入朝着它对应那句描述靠拢，同时远离这一批里的其他描述。图文配对本来就自然存在，除此之外不需要任何人工标注。">The dominant recipe (established by CLIP and its successors) trains two encoders: one for images, one for text: with a <strong>contrastive objective</strong>: for a batch of (image, caption) pairs, push each image's embedding close to its matching caption's embedding, and push it away from every other caption in the batch. No manual labels beyond naturally occurring image-caption pairs are required.</p>
+    <p class="i18n" data-en="Extending this to video mostly means extending the vision encoder to a video encoder (see the previous topic's tubelet embedding and spatiotemporal attention) while keeping the same contrastive idea, now aligning video clips with captions or narrations. The result is a model that can, for instance, retrieve the video clip that best matches a text query, or score how well a generated caption matches a given clip: both of which turn out to be reusable as evaluation tools, not just generation components." data-zh="把这套搬到视频上，主要工作就是把视觉编码器换成视频编码器，也就是上一主题讲过的管状嵌入加时空注意力；对比学习那套理念原封不动，只是对齐的对象从图文变成了视频片段与它的文字说明或旁白。这样练出来的模型能干两件事：给一句文本查询，找出最匹配的视频片段；给一段生成的描述和一个片段，判断它俩有多贴合。有意思的是，这两种能力后来都被拿去当评估工具用了，而不只是生成流程里的一环。">Extending this to video mostly means extending the vision encoder to a video encoder (see the previous topic's tubelet embedding and spatiotemporal attention) while keeping the same contrastive idea, now aligning video clips with captions or narrations. The result is a model that can, for instance, retrieve the video clip that best matches a text query, or score how well a generated caption matches a given clip: both of which turn out to be reusable as evaluation tools, not just generation components.</p>
+
+    <h2 class="i18n" data-en="Understanding and generation: two directions, one representation" data-zh="理解与生成：方向不同，表示相通">Understanding and generation: two directions, one representation</h2>
+    <div class="compare-grid">
+      <div class="compare-col">
+        <h4 class="i18n" data-en="Video understanding" data-zh="视频理解">Video understanding</h4>
+        <ul>
+          <li class="i18n" data-en="Video + question → text answer or structured output" data-zh="输入视频加问题 → 输出文本答案或结构化结果">Video + question → text answer or structured output</li>
+          <li class="i18n" data-en="Cosmos Reasoner examples: temporal grounding and event explanation" data-zh="Cosmos Reasoner 的应用示例：时间定位与事件解释">Cosmos Reasoner examples: temporal grounding and event explanation</li>
+          <li class="i18n" data-en="Errors show up as wrong or hallucinated answers" data-zh="出错的样子：答案答错，或者干脆编一个出来">Errors show up as wrong or hallucinated answers</li>
+        </ul>
+      </div>
+      <div class="compare-col">
+        <h4 class="i18n" data-en="Video generation" data-zh="视频生成">Video generation</h4>
+        <ul>
+          <li class="i18n" data-en="Text or condition → new video pixels" data-zh="输入文本或条件 → 输出全新的视频像素">Text or condition → new video pixels</li>
+          <li class="i18n" data-en="Cosmos Generator examples: synthetic scenario variants" data-zh="Cosmos Generator 的应用示例：生成合成场景变体">Cosmos Generator examples: synthetic scenario variants</li>
+          <li class="i18n" data-en="Errors show up as implausible or physically wrong footage" data-zh="出错的样子：画面不合常理，或者物理上根本站不住">Errors show up as implausible or physically wrong footage</li>
+        </ul>
+      </div>
+    </div>
+    <p class="i18n" data-en="These capabilities may share training data, positional representations, or parts of a transformer stack, but they do not necessarily use the same tokenizer or output head. Their objectives also differ: understanding commonly uses causal next-token prediction for text, whereas generation may use diffusion or flow objectives over visual, audio, or action latents. Cosmos 3 unifies the two modes within a Mixture-of-Transformers architecture while retaining different token-processing paths." data-zh="这两类能力可以共享训练数据、位置表示或部分 Transformer 层，但不一定使用同一个标记器或输出头，训练目标也不同：理解任务通常对文本使用因果下一 token 预测，生成任务则可能对视觉、音频或动作隐变量采用扩散或流模型目标。Cosmos 3 通过 Mixture-of-Transformers 架构统一这两种模式，同时保留不同的 token 处理路径。">These capabilities may share training data, positional representations, or parts of a transformer stack, but they do not necessarily use the same tokenizer or output head. Their objectives also differ: understanding commonly uses causal next-token prediction for text, whereas generation may use diffusion or flow objectives over visual, audio, or action latents. Cosmos 3 unifies the two modes within a Mixture-of-Transformers architecture while retaining different token-processing paths.</p>
+
+    <h2 class="i18n" data-en="Action-conditioned models" data-zh="以动作为条件的模型">Action-conditioned models</h2>
+    <p class="i18n" data-en="An <strong>action-conditioned</strong> model predicts video (or state) not just from past frames, but from past frames plus a specific action: <em>given this scene and this steering input, what happens next?</em> This is the mechanism that turns a passive world model into something usable for planning: it is literally the transition function from the previous topic, made concrete with real action vectors (steering angle, throttle, robot joint torques, etc.)." data-zh="<strong>以动作为条件</strong>的模型，预测视频或状态时靠的不只是过去几帧，还要搭上一个具体的动作：<em>就这个场景、就这么打方向，接下来会怎样？</em>正是这一机制，把被动的世界模型变成了能拿去做规划的东西。说白了它就是上一主题里的转移函数，只不过如今被落实成了真实的动作向量：转向角、油门、机器人的关节扭矩，诸如此类。">An <strong>action-conditioned</strong> model predicts video (or state) not just from past frames, but from past frames plus a specific action: <em>given this scene and this steering input, what happens next?</em> This is the mechanism that turns a passive world model into something usable for planning: it is literally the transition function from the previous topic, made concrete with real action vectors (steering angle, throttle, robot joint torques, etc.).</p>
+    <p class="i18n" data-en="Training this requires paired (observation, action, next observation) data: which is exactly what's expensive and hard to collect at scale for real robots or vehicles, and exactly why synthetic data generation is so attractive if it can be trusted: a simulator or a generative world model can produce unlimited (state, action, next-state) triples without needing a physical robot to execute every one of them." data-zh="训这类模型，得有成对的（观测、动作、下一观测）数据。可这种数据恰恰最难搞：真实机器人或车辆上大规模采集，既贵又费劲。合成数据的诱惑力就在这儿：一个模拟器或者一个生成式世界模型，能源源不断地产出（状态、动作、下一状态）三元组，用不着让物理机器人把每一条都真跑一遍。当然，前提是这些数据信得过。">Training this requires paired (observation, action, next observation) data: which is exactly what's expensive and hard to collect at scale for real robots or vehicles, and exactly why synthetic data generation is so attractive if it can be trusted: a simulator or a generative world model can produce unlimited (state, action, next-state) triples without needing a physical robot to execute every one of them.</p>
+
+    <h2 class="i18n" data-en="Synthetic data: promise and the trap" data-zh="合成数据：前景与陷阱">Synthetic data: promise and the trap</h2>
+    <p class="i18n" data-en="Synthetic data can be cheaper than collecting equivalent real-world cases and can deliberately target rare conditions such as night, fog, or wrong-way traffic. A simulator with explicit scene state may also export precise labels. A generative video model, however, does not automatically provide perfect ground truth: the realized pixels can diverge from the prompt or conditioning signal, and any automatically derived labels still require validation." data-zh="合成数据可能比采集同等规模的真实案例更便宜，也可以主动覆盖夜间、雾天或车辆逆行等罕见条件。具有显式场景状态的模拟器还可以导出精确标签。但生成式视频模型不会自动提供完美真值：实际生成的画面可能偏离提示词或条件信号，任何自动生成的标签仍需验证。">Synthetic data can be cheaper than collecting equivalent real-world cases and can deliberately target rare conditions such as night, fog, or wrong-way traffic. A simulator with explicit scene state may also export precise labels. A generative video model, however, does not automatically provide perfect ground truth: the realized pixels can diverge from the prompt or conditioning signal, and any automatically derived labels still require validation.</p>
+    <p class="i18n" data-en="The trap is the same one raised under counterfactual simulation: a generator trained to produce visually convincing video is optimized for <em>looking right</em>, not for being physically or statistically representative of the real distribution it's meant to stand in for. A model trained partly or wholly on synthetic data can end up learning the generator's biases and blind spots rather than the real world's actual statistics: a failure mode sometimes called <strong>domain gap</strong> or, in the worst case, model collapse from training on your own outputs." data-zh="陷阱和反事实模拟那一节说的是同一个：生成器是照着“视觉上令人信服”练出来的，它的优化目标是<em>看着对</em>，而不是在物理上或统计上真能代表它所替代的那个真实分布。于是，部分甚至全部用合成数据训出来的模型，学到的可能是生成器自己的偏差和盲区，而非真实世界的统计规律。这种失效有时被叫做<strong>领域差距（domain gap）</strong>；最糟的情况下，拿自己生成的输出反复训练，还会把模型训到坍塌。">The trap is the same one raised under counterfactual simulation: a generator trained to produce visually convincing video is optimized for <em>looking right</em>, not for being physically or statistically representative of the real distribution it's meant to stand in for. A model trained partly or wholly on synthetic data can end up learning the generator's biases and blind spots rather than the real world's actual statistics: a failure mode sometimes called <strong>domain gap</strong> or, in the worst case, model collapse from training on your own outputs.</p>
+
+    <div class="rule-box">
+      <span class="label i18n" data-en="The decision rule this topic justifies" data-zh="本节内容支撑的决策原则">The decision rule this topic justifies</span>
+      <span class="i18n" data-en="Treat synthetic data as an experiment whose value must be proven against held-out real footage, never as ground truth by default. This is not caution for its own sake: it follows directly from the fact that generation quality and real-world representativeness are two different properties that a model can have independently." data-zh="合成数据一律按实验对待：价值要拿留出的真实素材验过才算数，绝不能默认它就是真值。这条规矩不是为谨慎而谨慎，它直接来自一个事实：生成质量是一回事，能不能代表真实世界是另一回事，一个模型完全可能只占其一。">Treat synthetic data as an experiment whose value must be proven against held-out real footage, never as ground truth by default. This is not caution for its own sake: it follows directly from the fact that generation quality and real-world representativeness are two different properties that a model can have independently.</span>
+    </div>
+
+    <h2 class="i18n" data-en="Where the pieces sit in the Cosmos stack" data-zh="这些环节在 Cosmos 技术栈中的位置">Where the pieces sit in the Cosmos stack</h2>
+    <div class="diagram-panel">
+      <div class="diagram-caption i18n" data-en="Multimodal capabilities mapped to Cosmos components" data-zh="多模态能力与 Cosmos 组件的对应关系">Multimodal capabilities mapped to Cosmos components</div>
+      <div class="pipeline">
+        <div class="pipe-node">
+          <div class="n-label i18n" data-en="Vision-language alignment" data-zh="视觉-语言对齐">Vision-language alignment</div>
+          <div class="n-sub i18n" data-en="Shared embedding space" data-zh="共享嵌入空间">Shared embedding space</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node accent">
+          <div class="n-label i18n" data-en="Video understanding" data-zh="视频理解">Video understanding</div>
+          <div class="n-sub i18n" data-en="Cosmos Reasoner" data-zh="Cosmos 推理器">Cosmos Reasoner</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node accent">
+          <div class="n-label i18n" data-en="Video / action-conditioned generation" data-zh="视频 / 以动作为条件的生成">Video / action-conditioned generation</div>
+          <div class="n-sub i18n" data-en="Cosmos Generator" data-zh="Cosmos 生成器">Cosmos Generator</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node">
+          <div class="n-label i18n" data-en="Synthetic data" data-zh="合成数据">Synthetic data</div>
+          <div class="n-sub i18n" data-en="Must validate against real footage" data-zh="必须拿真实素材验过才算数">Must validate against real footage</div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="i18n" data-en="Glossary" data-zh="术语表">Glossary</h2>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr><th class="i18n" data-en="Term" data-zh="术语">Term</th><th class="i18n" data-en="Meaning" data-zh="含义">Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>Contrastive learning</code></td><td class="i18n" data-en="Training objective that pulls matching pairs together and pushes mismatched pairs apart in embedding space." data-zh="一种训练目标：在嵌入空间里把配得上的一对拉近，把配不上的推远。">Training objective that pulls matching pairs together and pushes mismatched pairs apart in embedding space.</td></tr>
+          <tr><td><code>Grounding</code></td><td class="i18n" data-en="Connecting a language description to a specific region, time span, or entity in visual data." data-zh="把一句语言描述，对应到视觉数据里某个具体的区域、时间段或实体上。">Connecting a language description to a specific region, time span, or entity in visual data.</td></tr>
+          <tr><td><code>Action-conditioned</code></td><td class="i18n" data-en="A model whose prediction depends explicitly on a proposed action, not just past observations." data-zh="这类模型做预测时，除了过去的观测，还要明确依赖一个待执行的动作。">A model whose prediction depends explicitly on a proposed action, not just past observations.</td></tr>
+          <tr><td><code>Domain gap</code></td><td class="i18n" data-en="The mismatch between a training distribution (e.g. synthetic) and the real distribution a model will face." data-zh="训练用的数据分布（比如合成数据）和模型上线后真正要面对的分布对不上。">The mismatch between a training distribution (e.g. synthetic) and the real distribution a model will face.</td></tr>
+          <tr><td><code>Physical AI</code></td><td class="i18n" data-en="Models connecting perception to physically grounded action or simulation, not just language description." data-zh="这类模型把感知接到有物理落地意义的行动或模拟上，而不止于用语言描述一番。">Models connecting perception to physically grounded action or simulation, not just language description.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="i18n" data-en="Study checklist" data-zh="学习检查清单">Study checklist</h2>
+    <div class="callout">
+      <span class="label i18n" data-en="Before moving on, you should be able to" data-zh="继续下一节之前，你应该能够">Before moving on, you should be able to</span>
+      <ul>
+        <li class="i18n" data-en="Explain the contrastive objective that trains vision-language alignment." data-zh="讲清楚视觉-语言对齐是靠什么样的对比学习目标练出来的。">Explain the contrastive objective that trains vision-language alignment.</li>
+        <li class="i18n" data-en="Describe how understanding and generation share a stack but differ in data flow direction." data-zh="说明理解和生成共用了哪些东西，又在数据流向上差在哪里。">Describe how understanding and generation share a stack but differ in data flow direction.</li>
+        <li class="i18n" data-en="Define an action-conditioned model in terms of the transition function from the previous topic." data-zh="借上一主题的转移函数，把“以动作为条件的模型”定义出来。">Define an action-conditioned model in terms of the transition function from the previous topic.</li>
+        <li class="i18n" data-en="Explain domain gap and why it means synthetic data needs real-world validation." data-zh="说清什么是领域差距（domain gap），以及它为什么逼着合成数据必须过真实世界这一关。">Explain domain gap and why it means synthetic data needs real-world validation.</li>
+      </ul>
+    </div>
+
+    <nav class="article-nav">
+      <a href="world-models.html">
+        <span class="dir i18n" data-en="Previous topic" data-zh="上一主题">Previous topic</span>
+        <span class="to i18n" data-en="← World Models" data-zh="← 世界模型">← World Models</span>
+      </a>
+      <a class="next" href="evaluation.html">
+        <span class="dir i18n" data-en="Next topic" data-zh="下一主题">Next topic</span>
+        <span class="to i18n" data-en="Evaluation →" data-zh="评估方法 →">Evaluation →</span>
+      </a>
+    </nav>
+
+  </article>
+</main>

@@ -1,0 +1,139 @@
+<title>World Models: World Models &amp; Cosmos</title>
+<link rel="stylesheet" href="../assets/site.css">
+<script src="../assets/site.js" defer></script>
+
+<div class="grain"></div>
+
+<button class="lang-toggle" id="langToggle" type="button" aria-label="Switch between English and Chinese">
+  <span id="langToggleLabel">中文</span>
+</button>
+
+<button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle light and dark theme">
+  <span class="tt-dot"></span>
+  <span id="themeToggleLabel">Dark</span>
+</button>
+
+<header class="masthead compact">
+  <div class="masthead-inner">
+    <a class="crumb i18n" href="../index.html" data-en="<span class=&quot;arrow&quot;>←</span> Study Path" data-zh="<span class=&quot;arrow&quot;>←</span> 返回学习路径"><span class="arrow">←</span> Study Path</a>
+    <div class="eyebrow i18n" data-en="Phase 1 · Topic 02" data-zh="第一阶段 · 主题 02">Phase 1 · Topic 02</div>
+    <h1 class="title i18n" data-en="World Models" data-zh="世界模型">World Models</h1>
+    <p class="dek i18n" data-en="What it means for a model to hold an internal state of the world, predict how that state changes, and reason about actions it never actually took." data-zh="模型在内部存着一份关于世界的状态，能预测这份状态会怎么变，还能推理那些自己压根没做过的动作。这到底意味着什么？">What it means for a model to hold an internal state of the world, predict how that state changes, and reason about actions it never actually took.</p>
+  </div>
+</header>
+
+<main>
+  <article class="article">
+
+    <h2 class="i18n" data-en="The core idea: state, not just pixels" data-zh="核心理念：状态，而不只是像素">The core idea: state, not just pixels</h2>
+    <p class="i18n" data-en="A video representation (the previous topic) answers <em>how do we encode what we see</em>. A predictive world model asks: <em>given the current state and, where applicable, an action, what could happen next?</em> That state may be an explicit latent variable, a sequence of tokens, or another learned representation. There is no single universally accepted architectural definition of a world model; prediction and action-conditioned simulation are the central ideas used in this tutorial." data-zh="上一主题的视频表征回答的是<em>如何编码观测内容</em>。预测式世界模型进一步追问：<em>给定当前状态，并在适用时加入动作条件，接下来可能发生什么？</em>这里的状态可以是显式隐变量、token 序列，也可以是其他学习得到的表示。学界对“世界模型”并没有唯一的架构定义；本教程采用的核心含义是预测，以及以动作为条件的模拟。">A video representation (the previous topic) answers <em>how do we encode what we see</em>. A predictive world model asks: <em>given the current state and, where applicable, an action, what could happen next?</em> That state may be an explicit latent variable, a sequence of tokens, or another learned representation. There is no single universally accepted architectural definition of a world model; prediction and action-conditioned simulation are the central ideas used in this tutorial.</p>
+    <p class="i18n" data-en="This idea predates deep learning by decades: it comes from control theory and robotics, where a <em>state-space model</em> tracks position, velocity, and other latent variables well before any neural network is involved. What's new in the last several years is learning that state representation directly from raw video, at scale, instead of hand-engineering it." data-zh="这个思路比深度学习早了几十年，源头在控制理论和机器人学。神经网络还没登场的年代，<em>状态空间模型</em>就已经在追踪位置、速度这些潜在变量了。近几年真正的新东西，是这种状态表示不再靠人工设计，而是直接从海量原始视频里学出来。">This idea predates deep learning by decades: it comes from control theory and robotics, where a <em>state-space model</em> tracks position, velocity, and other latent variables well before any neural network is involved. What's new in the last several years is learning that state representation directly from raw video, at scale, instead of hand-engineering it.</p>
+
+    <h2 class="i18n" data-en="The three jobs of a world model" data-zh="世界模型的三项工作">The three jobs of a world model</h2>
+    <p class="i18n" data-en="Almost every world model, from small robotics research systems to Cosmos-scale foundation models, is organized around three functions:" data-zh="小到机器人领域的研究系统，大到 Cosmos 这个量级的基础模型，几乎所有世界模型都围着下面这三项功能来组织：">Almost every world model, from small robotics research systems to Cosmos-scale foundation models, is organized around three functions:</p>
+
+    <dl class="term-list">
+      <div class="term">
+        <dt class="i18n" data-en="1. Encode: build the state" data-zh="1. 编码：构建状态">1. Encode: build the state</dt>
+        <dd class="i18n" data-en="Encode raw observations such as video frames and sensor readings into a learned state representation. This may reuse the tokenization and attention mechanisms from the previous topic, but the representation must preserve information useful for the downstream prediction objective; reconstruction alone does not guarantee that." data-zh="将视频帧、传感器读数等原始观测编码为学习得到的状态表示。这里可以沿用上一主题中的标记化与注意力机制，但表示必须保留对后续预测任务有用的信息；仅仅能够重建输入，并不能保证这一点。">Encode raw observations such as video frames and sensor readings into a learned state representation. This may reuse the tokenization and attention mechanisms from the previous topic, but the representation must preserve information useful for the downstream prediction objective; reconstruction alone does not guarantee that.</dd>
+      </div>
+      <div class="term">
+        <dt class="i18n" data-en="2. Predict: roll the state forward" data-zh="2. 预测：向前推演状态">2. Predict: roll the state forward</dt>
+        <dd class="i18n" data-en="Given the current state (and optionally a proposed action), predict the next state. This is the transition function. Repeating it produces a rollout: a sequence of imagined future states, which can be decoded back into video if needed." data-zh="拿当前状态，加上一个可选的待执行动作，预测出下一个状态：这就是转移函数（transition function）。把这一步反复执行下去，就得到一次推演（rollout），也就是一串想象出来的未来状态；需要的话，这串状态还能解码回视频。">Given the current state (and optionally a proposed action), predict the next state. This is the transition function. Repeating it produces a rollout: a sequence of imagined future states, which can be decoded back into video if needed.</dd>
+      </div>
+      <div class="term">
+        <dt class="i18n" data-en="3. Evaluate / plan: use the predictions" data-zh="3. 评估 / 规划：使用这些预测">3. Evaluate / plan: use the predictions</dt>
+        <dd class="i18n" data-en="Score predicted futures against some objective (safety, task success, plausibility) and use that score to choose actions, flag anomalies, or simply report a hypothesis to a human reviewer." data-zh="拿安全性、任务成功率、合理性之类的目标，给预测出来的各个未来打分。这个分数可以用来选动作、标异常，也可以只是把一个假设递给人工审核者看。">Score predicted futures against some objective (safety, task success, plausibility) and use that score to choose actions, flag anomalies, or simply report a hypothesis to a human reviewer.</dd>
+      </div>
+    </dl>
+
+    <p class="i18n" data-en="In Cosmos 3, these functions are exposed as two modes of a unified omnimodal architecture. Reasoner mode maps text and visual inputs to text for understanding, grounding, physical reasoning, planning, and action forecasting. Generator mode denoises multimodal tokens to produce images, video, synchronized sound, or actions, depending on the checkpoint and task. Neither mode by itself guarantees calibrated uncertainty or physically correct predictions; those properties must be evaluated." data-zh="在 Cosmos 3 中，这些功能由统一全模态架构的两种模式提供。Reasoner 模式把文本和视觉输入映射为文本，用于理解、定位、物理推理、规划和动作预测；Generator 模式则对多模态 token 去噪，并根据检查点和任务生成图像、视频、同步声音或动作。两种模式都不会天然保证不确定性已经校准，也不会保证预测在物理上正确；这些性质必须通过评估来验证。">In Cosmos 3, these functions are exposed as two modes of a unified omnimodal architecture. Reasoner mode maps text and visual inputs to text for understanding, grounding, physical reasoning, planning, and action forecasting. Generator mode denoises multimodal tokens to produce images, video, synchronized sound, or actions, depending on the checkpoint and task. Neither mode by itself guarantees calibrated uncertainty or physically correct predictions; those properties must be evaluated.</p>
+
+    <h2 class="i18n" data-en="Prediction under uncertainty" data-zh="不确定性下的预测">Prediction under uncertainty</h2>
+    <p class="i18n" data-en="The future is not deterministic from a single video clip. If a pedestrian is standing at a crosswalk, they might step out, wait, or turn around: the clip alone doesn't tell you which. A world model that predicts only <em>one</em> future (a single most-likely rollout) will systematically miss possibilities, especially rare but important ones like a wrong-way vehicle or a sudden stop." data-zh="光看一段视频，未来并不是确定的。一个行人站在人行横道边，他可能迈出去、可能原地等、也可能转身走开：单凭这段片段判断不了是哪一种。只预测<em>一个</em>未来（也就是最可能的那条推演）的世界模型，会系统性地漏掉其他可能，尤其是那些罕见但要命的情况，比如逆行车辆或者突然急刹。">The future is not deterministic from a single video clip. If a pedestrian is standing at a crosswalk, they might step out, wait, or turn around: the clip alone doesn't tell you which. A world model that predicts only <em>one</em> future (a single most-likely rollout) will systematically miss possibilities, especially rare but important ones like a wrong-way vehicle or a sudden stop.</p>
+    <p class="i18n" data-en="Two broad strategies handle this:" data-zh="应对的思路大体分两种：">Two broad strategies handle this:</p>
+    <ul>
+      <li class="i18n" data-en="<strong>Stochastic / multimodal prediction</strong>: the model outputs a distribution over possible next states (or samples several plausible rollouts) instead of a single point prediction. This is expensive but honest: it surfaces the cases where the model itself is unsure." data-zh="<strong>随机 / 多模态预测</strong>：模型输出下一状态上的一个分布（或者采样出若干条合理推演），而不是给一个点估计。这么做开销更大，但更诚实：模型自己拿不准的地方会被暴露出来。"><strong>Stochastic / multimodal prediction</strong>: the model outputs a distribution over possible next states (or samples several plausible rollouts) instead of a single point prediction. This is expensive but honest: it surfaces the cases where the model itself is unsure.</li>
+      <li class="i18n" data-en="<strong>Calibrated confidence</strong>: the model still produces a single best guess, but attaches a probability or confidence score that is trained to actually match its real accuracy (a 70% confidence prediction should be right about 70% of the time). This is cheaper but only useful if the calibration is trustworthy." data-zh="<strong>校准后的置信度</strong>：模型照样只给一个最优猜测，但附上一个概率或置信度，并且这个数字经过训练，要能对得上它的真实准确率（置信度 70% 的预测，实际正确率也该在 70% 上下）。这么做便宜得多，但前提是校准本身靠得住。"><strong>Calibrated confidence</strong>: the model still produces a single best guess, but attaches a probability or confidence score that is trained to actually match its real accuracy (a 70% confidence prediction should be right about 70% of the time). This is cheaper but only useful if the calibration is trustworthy.</li>
+    </ul>
+    <p class="i18n" data-en="This is where world models connect directly to the evaluation topic later in this phase: a model's uncertainty output is only useful if it's calibrated, and calibration is something you measure, not something you assume." data-zh="这里就直接连到本阶段后面的“评估”主题了：模型输出的不确定性，只有校准过才有用，而校准是要拿数据量出来的，不能默认它已经做到了。">This is where world models connect directly to the evaluation topic later in this phase: a model's uncertainty output is only useful if it's calibrated, and calibration is something you measure, not something you assume.</p>
+
+    <h2 class="i18n" data-en="Counterfactual simulation" data-zh="反事实模拟">Counterfactual simulation</h2>
+    <p class="i18n" data-en="A counterfactual asks: <em>what would have happened if X were different?</em> In world modeling, this means running the transition function forward from an observed state but under a hypothetical action or condition that didn't actually occur: for example, simulating what a scene would look like at night, or how traffic would flow if a lane were closed, starting from a real daytime clip." data-zh="反事实问的是：<em>要是 X 不一样，会发生什么？</em>放到世界模型里，就是从一个观测到的状态出发往前跑转移函数，但给它一个实际并未发生的假设动作或条件：比如从一段真实的白天片段出发，模拟同一场景在夜里会是什么样，或者某条车道封了之后车流会怎么变。">A counterfactual asks: <em>what would have happened if X were different?</em> In world modeling, this means running the transition function forward from an observed state but under a hypothetical action or condition that didn't actually occur: for example, simulating what a scene would look like at night, or how traffic would flow if a lane were closed, starting from a real daytime clip.</p>
+    <p class="i18n" data-en="Counterfactual simulation is the theoretical basis for Cosmos Generator's synthetic-data role: generating night, rain, fog, or camera-angle variants of a real clip is a counterfactual query: <em>same underlying scene, different condition</em>: and it is only useful to the extent the world model's transition function accurately captures how that condition actually changes the visible world, not just how it changes surface-level pixel statistics." data-zh="反事实模拟正是 Cosmos 生成器承担合成数据角色的理论依据：给一段真实片段生成夜间、雨天、雾天或不同机位的变体，本质上就是一次反事实查询：<em>同一个底层场景，换一组条件</em>。它有没有用，取决于世界模型的转移函数是否真的抓住了这个条件如何改变可见世界，而不只是改变了表层的像素统计。">Counterfactual simulation is the theoretical basis for Cosmos Generator's synthetic-data role: generating night, rain, fog, or camera-angle variants of a real clip is a counterfactual query: <em>same underlying scene, different condition</em>: and it is only useful to the extent the world model's transition function accurately captures how that condition actually changes the visible world, not just how it changes surface-level pixel statistics.</p>
+
+    <div class="callout amber">
+      <span class="label i18n" data-en="A caution worth internalizing" data-zh="一个值得牢记的警示">A caution worth internalizing</span>
+      <p class="i18n" data-en="A conditionally generated video can look realistic and still be wrong about the causal structure of the world: for example, rain may change surface appearance without correctly changing visibility, traction, or behavior. Visual plausibility is not physical correctness, and merely changing a prompt does not establish a valid causal counterfactual. This is why the study plan requires synthetic data to prove its value on held-out <strong>real</strong> footage before it is trusted." data-zh="条件生成的视频即使看起来逼真，也可能错误地表现世界的因果结构。例如，雨水可能改变了表面外观，却没有正确影响能见度、附着力或相关行为。视觉可信不等于物理正确；仅仅修改提示词，也不能证明生成结果是有效的因果反事实。因此，本学习计划要求先在留出的<strong>真实</strong>素材上验证合成数据的价值，再决定是否采用。">A conditionally generated video can look realistic and still be wrong about the causal structure of the world: for example, rain may change surface appearance without correctly changing visibility, traction, or behavior. Visual plausibility is not physical correctness, and merely changing a prompt does not establish a valid causal counterfactual. This is why the study plan requires synthetic data to prove its value on held-out <strong>real</strong> footage before it is trusted.</p>
+    </div>
+
+    <h2 class="i18n" data-en="Planning: turning predictions into decisions" data-zh="规划：把预测转化为决策">Planning: turning predictions into decisions</h2>
+    <p class="i18n" data-en="Planning is the step where predicted rollouts get compared and a course of action gets chosen: the classic setting is model-based reinforcement learning, where an agent imagines several action sequences, predicts each one's outcome using the world model, scores the outcomes, and picks the best-scoring action. This is powerful because it lets an agent \"think ahead\" without acting in the real world first. But it inherits every weakness of the prediction step: if the world model is wrong, the plan built on top of it is wrong too, often in ways that are hard to detect until execution." data-zh="规划就是把预测出来的若干条推演拿来比较，从中选出一个行动方案。最经典的场景是基于模型的强化学习（model-based RL）：智能体设想几组动作序列，用世界模型预测各自的结果，给结果打分，再挑分最高的那个动作。这套做法强就强在，智能体可以先“想一遍”而不必真的去世界里试。但它也把预测环节的毛病全盘继承了：世界模型错了，搭在上面的规划就跟着错，而且这种错往往要等到真执行时才暴露出来。">Planning is the step where predicted rollouts get compared and a course of action gets chosen: the classic setting is model-based reinforcement learning, where an agent imagines several action sequences, predicts each one's outcome using the world model, scores the outcomes, and picks the best-scoring action. This is powerful because it lets an agent "think ahead" without acting in the real world first. But it inherits every weakness of the prediction step: if the world model is wrong, the plan built on top of it is wrong too, often in ways that are hard to detect until execution.</p>
+    <p class="i18n" data-en="For camera-driven, operator-assist systems specifically, full autonomous planning is deliberately out of scope: the goal is prediction and explanation feeding a human decision, not an agent acting on the world model's imagined rollouts. Understanding planning conceptually still matters, because it clarifies exactly what capability is being withheld and why: the system boundary that keeps a human in the loop is a planning boundary, not a prediction boundary." data-zh="具体到以摄像头为核心、辅助操作员决策的系统，完全自主的规划是被有意划到范围之外的：系统只负责给出预测和解释，供人来做决定，而不是让智能体照着世界模型想象出来的推演直接动手。即便如此，把规划这件事在概念上想清楚仍然有必要，因为它能说清楚到底哪一部分能力被刻意留下没交出去、为什么要这样：让人类留在回路里的那道边界，是规划边界，不是预测边界。">For camera-driven, operator-assist systems specifically, full autonomous planning is deliberately out of scope: the goal is prediction and explanation feeding a human decision, not an agent acting on the world model's imagined rollouts. Understanding planning conceptually still matters, because it clarifies exactly what capability is being withheld and why: the system boundary that keeps a human in the loop is a planning boundary, not a prediction boundary.</p>
+
+    <h2 class="i18n" data-en="The encode-predict-evaluate loop" data-zh="编码-预测-评估循环">The encode-predict-evaluate loop</h2>
+    <div class="diagram-panel">
+      <div class="diagram-caption i18n" data-en="How the three jobs connect" data-zh="三项工作如何相互衔接">How the three jobs connect</div>
+      <div class="pipeline">
+        <div class="pipe-node accent">
+          <div class="n-label i18n" data-en="Encode" data-zh="编码">Encode</div>
+          <div class="n-sub i18n" data-en="Video → latent state" data-zh="视频 → 隐状态">Video → latent state</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node accent">
+          <div class="n-label i18n" data-en="Predict" data-zh="预测">Predict</div>
+          <div class="n-sub i18n" data-en="State (+ action) → next state" data-zh="状态（+ 动作）→ 下一状态">State (+ action) → next state</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node">
+          <div class="n-label i18n" data-en="Evaluate" data-zh="评估">Evaluate</div>
+          <div class="n-sub i18n" data-en="Score rollouts against an objective" data-zh="依据目标对推演结果打分">Score rollouts against an objective</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node">
+          <div class="n-label i18n" data-en="Decide / report" data-zh="决策 / 报告">Decide / report</div>
+          <div class="n-sub i18n" data-en="Human review or bounded action" data-zh="人工审核或有边界的行动">Human review or bounded action</div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="i18n" data-en="Glossary" data-zh="术语表">Glossary</h2>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr><th class="i18n" data-en="Term" data-zh="术语">Term</th><th class="i18n" data-en="Meaning" data-zh="含义">Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>State</code></td><td class="i18n" data-en="A compressed representation believed to capture everything relevant for prediction." data-zh="一种压缩表示，被认为已经装下了预测所需的全部相关信息。">A compressed representation believed to capture everything relevant for prediction.</td></tr>
+          <tr><td><code>Transition function</code></td><td class="i18n" data-en="The learned function that maps (state, action) → next state." data-zh="学出来的一个函数，把（状态, 动作）映射到下一个状态。">The learned function that maps (state, action) → next state.</td></tr>
+          <tr><td><code>Rollout</code></td><td class="i18n" data-en="A sequence of predicted future states produced by repeated transitions." data-zh="反复应用转移函数得到的一串预测未来状态。">A sequence of predicted future states produced by repeated transitions.</td></tr>
+          <tr><td><code>Calibration</code></td><td class="i18n" data-en="How well a model's stated confidence matches its actual accuracy." data-zh="模型给出的置信度与实际准确率之间的一致程度。">How well a model's stated confidence matches its actual accuracy.</td></tr>
+          <tr><td><code>Counterfactual</code></td><td class="i18n" data-en="A simulated \"what if\" scenario that did not actually occur." data-zh="模拟出来的“假如……会怎样”的场景，现实中并没有真正发生过。">A simulated "what if" scenario that did not actually occur.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="i18n" data-en="Study checklist" data-zh="学习检查清单">Study checklist</h2>
+    <div class="callout">
+      <span class="label i18n" data-en="Before moving on, you should be able to" data-zh="继续下一节之前，你应该能够">Before moving on, you should be able to</span>
+      <ul>
+        <li class="i18n" data-en="Distinguish a world model's job from a video representation's job in one sentence." data-zh="用一句话说清世界模型和视频表征各自负责什么。">Distinguish a world model's job from a video representation's job in one sentence.</li>
+        <li class="i18n" data-en="Name the three functions (encode, predict, evaluate) and give an example of each." data-zh="说出三项功能（编码、预测、评估），并各举一个例子。">Name the three functions (encode, predict, evaluate) and give an example of each.</li>
+        <li class="i18n" data-en="Explain why a single deterministic prediction is dangerous for rare events." data-zh="解释为什么只给一个确定性预测，对罕见事件来说是危险的。">Explain why a single deterministic prediction is dangerous for rare events.</li>
+        <li class="i18n" data-en="Explain why visual plausibility is not the same as physical correctness in a counterfactual." data-zh="讲清楚在反事实场景里，看着合理为什么不等于物理上正确。">Explain why visual plausibility is not the same as physical correctness in a counterfactual.</li>
+      </ul>
+    </div>
+
+    <nav class="article-nav">
+      <a href="video-representations.html">
+        <span class="dir i18n" data-en="Previous topic" data-zh="上一主题">Previous topic</span>
+        <span class="to i18n" data-en="← Video Representations" data-zh="← 视频表征">← Video Representations</span>
+      </a>
+      <a class="next" href="multimodal-physical-ai.html">
+        <span class="dir i18n" data-en="Next topic" data-zh="下一主题">Next topic</span>
+        <span class="to i18n" data-en="Multimodal / Physical AI →" data-zh="多模态 / 具身智能 →">Multimodal / Physical AI →</span>
+      </a>
+    </nav>
+
+  </article>
+</main>

@@ -1,0 +1,178 @@
+<title>Cosmos Architecture: World Models &amp; Cosmos</title>
+<link rel="stylesheet" href="../assets/site.css">
+<script src="../assets/site.js" defer></script>
+
+<div class="grain"></div>
+
+<button class="lang-toggle" id="langToggle" type="button" aria-label="Switch between English and Chinese">
+  <span id="langToggleLabel">中文</span>
+</button>
+
+<button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle light and dark theme">
+  <span class="tt-dot"></span>
+  <span id="themeToggleLabel">Dark</span>
+</button>
+
+<header class="masthead compact">
+  <div class="masthead-inner">
+    <a class="crumb i18n" href="../index.html" data-en="<span class=&quot;arrow&quot;>←</span> Study Path" data-zh="<span class=&quot;arrow&quot;>←</span> 返回学习路径"><span class="arrow">←</span> Study Path</a>
+    <div class="eyebrow i18n" data-en="Phase 1 · Topic 05" data-zh="第一阶段 · 主题 05">Phase 1 · Topic 05</div>
+    <h1 class="title i18n" data-en="Cosmos Architecture" data-zh="Cosmos 架构">Cosmos Architecture</h1>
+    <p class="dek i18n" data-en="Where every concept from the last four topics actually lives in the Cosmos Framework codebase: Reasoner vs. Generator, inference vs. training, and the file paths you'll actually touch in Phase 2." data-zh="前面四个主题里的每一个概念，具体落在 Cosmos Framework 代码库的哪个位置：推理器和生成器怎么分、推理和训练怎么分，以及第二阶段你真正会动到的那些文件路径。">Where every concept from the last four topics actually lives in the Cosmos Framework codebase: Reasoner vs. Generator, inference vs. training, and the file paths you'll actually touch in Phase 2.</p>
+  </div>
+</header>
+
+<main>
+  <article class="article">
+
+    <h2 class="i18n" data-en="This topic is different from the other four" data-zh="这一主题与前四个不同">This topic is different from the other four</h2>
+    <p class="i18n" data-en="Video representations, world models, multimodal grounding, and evaluation are field-wide concepts: they'd be true regardless of which specific model or framework you used. This topic is deliberately narrower: it's a map of one specific, real codebase, so that when Phase 2 asks you to install and run Cosmos, you already know where things live instead of exploring blind." data-zh="视频表征、世界模型、多模态落地和评估，都是整个领域通用的概念，换任何模型或框架都成立。这一主题则是有意收窄的：它是一份针对某个具体、真实代码库的地图，好让第二阶段真要你装上并跑起 Cosmos 时，你已经知道东西都在哪儿，而不是一头雾水地乱翻。">Video representations, world models, multimodal grounding, and evaluation are field-wide concepts: they'd be true regardless of which specific model or framework you used. This topic is deliberately narrower: it's a map of one specific, real codebase, so that when Phase 2 asks you to install and run Cosmos, you already know where things live instead of exploring blind.</p>
+
+    <h2 class="i18n" data-en="Reasoner versus Generator" data-zh="推理器与生成器">Reasoner versus Generator</h2>
+    <p class="i18n" data-en="Cosmos 3 exposes two runtime surfaces within a unified omnimodal Mixture-of-Transformers architecture. They are modes with different attention behavior and outputs, not simply two unrelated model families:" data-zh="Cosmos 3 在统一的全模态 Mixture-of-Transformers 架构中提供两种运行接口。二者采用不同的注意力方式并产生不同类型的输出，并不是两个互不相关的模型系列：">Cosmos 3 exposes two runtime surfaces within a unified omnimodal Mixture-of-Transformers architecture. They are modes with different attention behavior and outputs, not simply two unrelated model families:</p>
+
+    <div class="compare-grid">
+      <div class="compare-col">
+        <h4 class="i18n" data-en="Cosmos Reasoner" data-zh="Cosmos 推理器">Cosmos Reasoner</h4>
+        <ul>
+          <li class="i18n" data-en="Text and vision in; text out (JSON only when requested and successfully followed)" data-zh="输入文本与视觉内容，输出文本；只有在明确要求且模型正确遵循格式时才是 JSON">Text and vision in; text out (JSON only when requested and successfully followed)</li>
+          <li class="i18n" data-en="Understanding, grounding, physical reasoning, planning, and action forecasting" data-zh="理解、定位、物理推理、规划与动作预测">Understanding, grounding, physical reasoning, planning, and action forecasting</li>
+          <li class="i18n" data-en="Example inputs live at <code>inputs/reasoner/*.json</code>" data-zh="示例输入位于 <code>inputs/reasoner/*.json</code>">Example inputs live at <code>inputs/reasoner/*.json</code></li>
+        </ul>
+      </div>
+      <div class="compare-col">
+        <h4 class="i18n" data-en="Cosmos Generator" data-zh="Cosmos 生成器">Cosmos Generator</h4>
+        <ul>
+          <li class="i18n" data-en="Text, vision, sound, or action conditions in; vision, synchronized sound, or action out" data-zh="输入文本、视觉、声音或动作条件，输出视觉内容、同步声音或动作">Text, vision, sound, or action conditions in; vision, synchronized sound, or action out</li>
+          <li class="i18n" data-en="Generation, simulation, future prediction, synthetic data, and policy learning" data-zh="生成、模拟、未来预测、合成数据与策略学习">Generation, simulation, future prediction, synthetic data, and policy learning</li>
+          <li class="i18n" data-en="Example inputs live at <code>inputs/omni/*.json</code> (e.g. <code>t2v.json</code> for text-to-video)" data-zh="示例输入位于 <code>inputs/omni/*.json</code>（例如用于文本生成视频的 <code>t2v.json</code>）">Example inputs live at <code>inputs/omni/*.json</code> (e.g. <code>t2v.json</code> for text-to-video)</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="i18n" data-en="The two surfaces share the Cosmos 3 transformer architecture, multimodal attention layers, and 3D multidimensional rotary position encoding. Reasoner mode uses causal self-attention for autoregressive text prediction; Generator mode uses full attention to denoise multimodal tokens. Available modalities still depend on the selected checkpoint and serving backend." data-zh="两种接口共享 Cosmos 3 的 Transformer 架构、多模态注意力层和三维多维旋转位置编码。Reasoner 模式使用因果自注意力进行自回归文本预测；Generator 模式使用全注意力对多模态 token 去噪。实际可用的输入输出模态仍取决于所选检查点和服务后端。">The two surfaces share the Cosmos 3 transformer architecture, multimodal attention layers, and 3D multidimensional rotary position encoding. Reasoner mode uses causal self-attention for autoregressive text prediction; Generator mode uses full attention to denoise multimodal tokens. Available modalities still depend on the selected checkpoint and serving backend.</p>
+
+    <h2 class="i18n" data-en="Inference versus training: two separate trees" data-zh="推理与训练：两棵独立的目录树">Inference versus training: two separate trees</h2>
+    <p class="i18n" data-en="The codebase enforces the inference/training split structurally, not just conceptually: the repo's own contributor guidance is explicit that inference-time code and training-time code should not import from each other. This matters for Phase 2: everything you need for reproducible inference lives under <code>cosmos_framework/inference/</code>, and you do not need to read the training subpackages at all yet." data-zh="推理和训练的分离，这个代码库是在结构层面强制执行的，不只是概念上说说：仓库给贡献者的指引写得很明确：推理期代码和训练期代码不应互相导入。这一点对第二阶段很关键：做可复现推理需要的一切都在 <code>cosmos_framework/inference/</code> 下，训练相关的子包现阶段完全不用看。">The codebase enforces the inference/training split structurally, not just conceptually: the repo's own contributor guidance is explicit that inference-time code and training-time code should not import from each other. This matters for Phase 2: everything you need for reproducible inference lives under <code>cosmos_framework/inference/</code>, and you do not need to read the training subpackages at all yet.</p>
+
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr><th class="i18n" data-en="Concept from earlier topics" data-zh="前面主题中的概念">Concept from earlier topics</th><th class="i18n" data-en="Where it lives in the repo" data-zh="在代码库中的位置">Where it lives in the repo</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="i18n" data-en="Inference CLI entry point" data-zh="推理命令行入口">Inference CLI entry point</td><td><code>cosmos_framework/scripts/inference.py</code></td></tr>
+          <tr><td class="i18n" data-en="Sample args / prompts per modality" data-zh="每种模态的示例参数 / 提示词">Sample args / prompts per modality</td><td><code>cosmos_framework/inference/defaults/&lt;mode&gt;/sample_args.json</code></td></tr>
+          <tr><td class="i18n" data-en="Model + inference core" data-zh="模型与推理核心">Model + inference core</td><td><code>cosmos_framework/inference/model.py</code>, <code>inference.py</code></td></tr>
+          <tr><td class="i18n" data-en="Online serving (for a persistent Reasoner/Generator service)" data-zh="在线服务（把推理器/生成器跑成常驻服务）">Online serving (for a persistent Reasoner/Generator service)</td><td><code>cosmos_framework/inference/ray/</code></td></tr>
+          <tr><td class="i18n" data-en="Evaluation harness (Phase 1's evaluation topic, in code form)" data-zh="评估框架（“评估”主题落到代码里的样子）">Evaluation harness (Phase 1's evaluation topic, in code form)</td><td><code>cosmos_framework/evaluation/</code></td></tr>
+          <tr><td class="i18n" data-en="Training loop, datasets, checkpoints (out of scope until Phase 2 goals are met)" data-zh="训练循环、数据集、检查点（第二阶段目标达成前不在范围内）">Training loop, datasets, checkpoints (out of scope until Phase 2 goals are met)</td><td><code>cosmos_framework/trainer/</code>, <code>data/</code>, <code>checkpoint/</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="i18n" data-en="The model / data / evaluation stack" data-zh="模型 / 数据 / 评估技术栈">The model / data / evaluation stack</h2>
+    <p class="i18n" data-en="For navigation, it is useful to separate four software concerns: model implementation, data and inputs, evaluation, and execution orchestration. This is a code-organization map, not a claim that data flows through these directories in the left-to-right order shown below:" data-zh="为了便于浏览代码，可以把仓库分成四类职责：模型实现、数据与输入、评估，以及执行编排。下面展示的是代码组织地图，并不表示数据会按图中从左到右的顺序依次流经这些目录：">For navigation, it is useful to separate four software concerns: model implementation, data and inputs, evaluation, and execution orchestration. This is a code-organization map, not a claim that data flows through these directories in the left-to-right order shown below:</p>
+
+    <div class="diagram-panel">
+      <div class="diagram-caption i18n" data-en="Repo structure mapped to the conceptual stack" data-zh="代码库结构与概念技术栈的对应关系">Repo structure mapped to the conceptual stack</div>
+      <div class="pipeline">
+        <div class="pipe-node accent">
+          <div class="n-label i18n" data-en="Model" data-zh="模型">Model</div>
+          <div class="n-sub i18n" data-en="cosmos_framework/model/ + inference/model.py" data-zh="cosmos_framework/model/ + inference/model.py">cosmos_framework/model/ + inference/model.py</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node">
+          <div class="n-label i18n" data-en="Data" data-zh="数据">Data</div>
+          <div class="n-sub i18n" data-en="cosmos_framework/data/ (training) · inputs/ JSON (inference)" data-zh="cosmos_framework/data/（训练）· inputs/ JSON（推理）">cosmos_framework/data/ (training) · inputs/ JSON (inference)</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node accent">
+          <div class="n-label i18n" data-en="Evaluation" data-zh="评估">Evaluation</div>
+          <div class="n-sub i18n" data-en="cosmos_framework/evaluation/" data-zh="cosmos_framework/evaluation/">cosmos_framework/evaluation/</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node">
+          <div class="n-label i18n" data-en="Orchestration" data-zh="编排">Orchestration</div>
+          <div class="n-sub i18n" data-en="controller/, launcher/ (Slurm, torchrun, k8s)" data-zh="controller/、launcher/（Slurm、torchrun、k8s）">controller/, launcher/ (Slurm, torchrun, k8s)</div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="i18n" data-en="Distributed execution" data-zh="分布式执行">Distributed execution</h2>
+    <p class="i18n" data-en="Both inference and training scale from a single GPU to multiple nodes using the same underlying pattern: a launcher (<code>torchrun</code> for single-node multi-GPU, Slurm or k8s for multi-node) starts multiple processes that coordinate through a parallelism strategy defined in <code>cosmos_framework/model/</code>. For inference specifically, a <code>--parallelism-preset</code> flag (e.g. <code>latency</code>) selects a tuned configuration rather than requiring you to hand-tune parallelism dimensions yourself." data-zh="推理和训练从单卡扩到多节点，走的是同一套模式：启动器（单机多卡用 <code>torchrun</code>，多机用 Slurm 或 k8s）拉起多个进程，这些进程按 <code>cosmos_framework/model/</code> 里定义的并行策略互相配合。推理这边还有个 <code>--parallelism-preset</code> 参数（比如 <code>latency</code>），直接选一套调好的配置，不用你自己去手调各个并行维度。">Both inference and training scale from a single GPU to multiple nodes using the same underlying pattern: a launcher (<code>torchrun</code> for single-node multi-GPU, Slurm or k8s for multi-node) starts multiple processes that coordinate through a parallelism strategy defined in <code>cosmos_framework/model/</code>. For inference specifically, a <code>--parallelism-preset</code> flag (e.g. <code>latency</code>) selects a tuned configuration rather than requiring you to hand-tune parallelism dimensions yourself.</p>
+    <p class="i18n" data-en="This connects to the evaluation topic's latency and cost metrics: the parallelism preset you choose is a direct lever on both. A <code>latency</code>-tuned preset trades GPU-hours for faster single-request turnaround: the right trade-off depends on whether you're optimizing for one urgent event or high-throughput batch processing of many clips." data-zh="这与“评估”主题里的延迟和成本指标是直接挂钩的：你选的并行预设，就是同时作用于这两者的一根杠杆。按 <code>latency</code>（延迟）调优的预设，是拿更多 GPU 小时换单次请求的更快响应：这笔账划不划算，取决于你是在优化一个紧急事件，还是在优化大批片段的高吞吐处理。">This connects to the evaluation topic's latency and cost metrics: the parallelism preset you choose is a direct lever on both. A <code>latency</code>-tuned preset trades GPU-hours for faster single-request turnaround: the right trade-off depends on whether you're optimizing for one urgent event or high-throughput batch processing of many clips.</p>
+
+    <h2 class="i18n" data-en="Commands you'll actually run in Phase 2" data-zh="第二阶段你会实际用到的命令">Commands you'll actually run in Phase 2</h2>
+    <p class="i18n" data-en="These are pulled directly from the framework's own contributor guidance, not paraphrased: they are the real commands, kept here so Phase 2 starts from a known-working baseline instead of trial and error." data-zh="下面这些命令直接摘自框架自己的贡献者指引，没有转述：都是真实能跑的命令。放在这里，是为了让第二阶段从一个已知可用的基线开始，而不是靠反复试错。">These are pulled directly from the framework's own contributor guidance, not paraphrased: they are the real commands, kept here so Phase 2 starts from a known-working baseline instead of trial and error.</p>
+
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr><th class="i18n" data-en="Task" data-zh="任务">Task</th><th class="i18n" data-en="Command" data-zh="命令">Command</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="i18n" data-en="Single-GPU inference" data-zh="单 GPU 推理">Single-GPU inference</td>
+            <td><code>python -m cosmos_framework.scripts.inference -i inputs/omni/t2v.json -o outputs/ --checkpoint-path Cosmos3-Nano</code></td>
+          </tr>
+          <tr>
+            <td class="i18n" data-en="Multi-GPU inference" data-zh="多 GPU 推理">Multi-GPU inference</td>
+            <td><code>torchrun --nproc-per-node=4 -m cosmos_framework.scripts.inference --parallelism-preset=latency -i ... -o outputs/ ...</code></td>
+          </tr>
+          <tr>
+            <td class="i18n" data-en="Start online Ray server" data-zh="启动在线 Ray 服务">Start online Ray server</td>
+            <td><code>python -m cosmos_framework.inference.ray.serve --parallelism-preset=latency -o outputs/ray_serve --checkpoint-path Cosmos3-Nano</code></td>
+          </tr>
+          <tr>
+            <td class="i18n" data-en="See all CLI flags" data-zh="查看全部命令行参数">See all CLI flags</td>
+            <td><code>python -m cosmos_framework.scripts.inference --help</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rule-box">
+      <span class="label i18n" data-en="Two gotchas worth knowing before Phase 2" data-zh="进入第二阶段前值得了解的两个坑">Two gotchas worth knowing before Phase 2</span>
+      <span class="i18n" data-en="Reproducibility requires explicitly passing <code>--seed &lt;int&gt;</code>: without it, a random seed is used every run, which breaks the \"one fixed experiment\" goal from Phase 2. And relative paths inside input JSON files resolve relative to the JSON file's own directory, not your current working directory: a common source of confusing \"file not found\" errors." data-zh="要可复现，就必须显式传 <code>--seed &lt;int&gt;</code>：不传的话每次运行都会随机取种子，第二阶段“一个固定实验”那个目标就直接废了。另外，输入 JSON 里的相对路径是相对于该 JSON 文件所在目录解析的，不是相对于你当前的工作目录：这是“文件未找到”这类报错最常见的来源，而且很容易让人摸不着头脑。">Reproducibility requires explicitly passing <code>--seed &lt;int&gt;</code>: without it, a random seed is used every run, which breaks the "one fixed experiment" goal from Phase 2. And relative paths inside input JSON files resolve relative to the JSON file's own directory, not your current working directory: a common source of confusing "file not found" errors.</span>
+    </div>
+
+    <h2 class="i18n" data-en="Glossary" data-zh="术语表">Glossary</h2>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr><th class="i18n" data-en="Term" data-zh="术语">Term</th><th class="i18n" data-en="Meaning" data-zh="含义">Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>Checkpoint</code></td><td class="i18n" data-en="A saved, loadable set of trained model weights (e.g. Cosmos3-Nano)." data-zh="一组保存下来、可以直接加载的训练好的模型权重（比如 Cosmos3-Nano）。">A saved, loadable set of trained model weights (e.g. Cosmos3-Nano).</td></tr>
+          <tr><td><code>Parallelism preset</code></td><td class="i18n" data-en="A pre-tuned configuration for splitting inference work across multiple GPUs." data-zh="一套预先调好的配置，用来把推理任务拆到多块 GPU 上跑。">A pre-tuned configuration for splitting inference work across multiple GPUs.</td></tr>
+          <tr><td><code>Ray serving</code></td><td class="i18n" data-en="Running the model as a persistent, request-handling service rather than a one-shot script." data-zh="把模型跑成一个常驻的、能接请求的服务，而不是一次性脚本。">Running the model as a persistent, request-handling service rather than a one-shot script.</td></tr>
+          <tr><td><code>DCP</code></td><td class="i18n" data-en="Distributed checkpoint format used during training, exportable to Hugging Face format." data-zh="训练时使用的分布式检查点格式，可以导出成 Hugging Face 格式。">Distributed checkpoint format used during training, exportable to Hugging Face format.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="i18n" data-en="Study checklist" data-zh="学习检查清单">Study checklist</h2>
+    <div class="callout">
+      <span class="label i18n" data-en="Before moving on to Phase 2, you should be able to" data-zh="进入第二阶段之前，你应该能够">Before moving on to Phase 2, you should be able to</span>
+      <ul>
+        <li class="i18n" data-en="Point to the exact file that runs single-GPU inference." data-zh="准确指出跑单 GPU 推理的是哪个文件。">Point to the exact file that runs single-GPU inference.</li>
+        <li class="i18n" data-en="Explain why inference and training code are kept structurally separate." data-zh="解释推理代码和训练代码为什么要在结构上分开。">Explain why inference and training code are kept structurally separate.</li>
+        <li class="i18n" data-en="Locate where example Reasoner and Generator inputs live." data-zh="找到推理器和生成器的示例输入文件放在哪里。">Locate where example Reasoner and Generator inputs live.</li>
+        <li class="i18n" data-en="Name the flag required for reproducible runs and explain what happens if you omit it." data-zh="说出让运行可复现所必需的那个参数，并说明漏掉它会怎样。">Name the flag required for reproducible runs and explain what happens if you omit it.</li>
+      </ul>
+    </div>
+
+    <nav class="article-nav">
+      <a href="evaluation.html">
+        <span class="dir i18n" data-en="Previous topic" data-zh="上一主题">Previous topic</span>
+        <span class="to i18n" data-en="← Evaluation" data-zh="← 评估方法">← Evaluation</span>
+      </a>
+      <a class="next" href="../index.html">
+        <span class="dir i18n" data-en="Back to" data-zh="返回">Back to</span>
+        <span class="to i18n" data-en="Study Path overview →" data-zh="学习路径总览 →">Study Path overview →</span>
+      </a>
+    </nav>
+
+  </article>
+</main>
